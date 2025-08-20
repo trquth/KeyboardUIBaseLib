@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "go_back_ico.pdf",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
