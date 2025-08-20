@@ -8,7 +8,7 @@
 import SwiftUI
 
 // MARK: - Unified WText Component
-struct WText: View {
+public struct WText: View {
     // MARK: - Properties (WIconButton style)
     private var _text: String
     private var _font: Font
@@ -18,7 +18,7 @@ struct WText: View {
     private var _multilineTextAlignment: TextAlignment
     
     // MARK: - Initializer (WIconButton style)
-    init(
+    public  init(
         _ text: String,
         font: Font = .system(size: 16),
         color: Color = .primary,
@@ -35,7 +35,7 @@ struct WText: View {
     }
     
     // MARK: - Body
-    var body: some View {
+   public var body: some View {
         Text(_text)
             .font(_font)
             .foregroundColor(_color)
@@ -59,7 +59,7 @@ extension WText {
         return copy
     }
     
-    func customFont(_ fontName: FontName, size: CGFloat) -> WText {
+    public func customFont(_ fontName: FontName, size: CGFloat) -> WText {
         var copy = self
         copy._font = .custom(fontName, size: size)
         return copy

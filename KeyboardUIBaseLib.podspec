@@ -33,7 +33,7 @@ TODO: Add long description of the pod here.
   s.source_files = 'Sources/KeyboardUIBaseLib/**/*.swift'
 
   s.resource_bundles = {
-    'KeyboardUIBaseLib' => ['Sources/KeyboardUIBaseLib/Resources/**/*']
+    'KeyboardUIBaseLibAssets' => ['Sources/KeyboardUIBaseLib/Resources/**/*']
   }
 
   s.frameworks = 'SwiftUI', 'Foundation'

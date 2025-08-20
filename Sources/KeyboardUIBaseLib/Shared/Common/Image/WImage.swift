@@ -57,7 +57,7 @@ struct WImage: View {
         #if COCOAPODS
         print("Using CocoaPods bundle for resources")
         // For CocoaPods, resources are in a named bundle
-        let bundleName = "KeyboardUIBaseLib"
+        let bundleName = "KeyboardUIBaseLibAssets"
         guard let bundleURL = Bundle(for: BundleToken.self).url(forResource: bundleName, withExtension: "bundle"),
               let bundle = Bundle(url: bundleURL) else {
             return Bundle.main
@@ -73,9 +73,6 @@ struct WImage: View {
         #endif
     }
 }
-
-// Helper class to get the current bundle
-private class BundleToken {}
 
 // MARK: - WImage Extensions
 extension WImage {

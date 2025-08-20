@@ -6,10 +6,12 @@
 //
 
 import SwiftUI
+#if canImport(UIKit)
 import UIKit
+#endif
 
 // MARK: - Custom Font Names (Based on your project fonts)
-enum FontName: String, CaseIterable {
+public enum FontName: String, CaseIterable {
     case interRegular = "Inter18pt-Regular"
     case interMedium = "Inter18pt-Medium"
     case interBold = "Inter18pt-Bold"
@@ -67,9 +69,24 @@ extension Font {
     }
     
     public static func registerCustomFonts() {
+        let bundle = Bundle.getKeyboardUIBaseLibResourceBundle()
+        print("🔍 Registering custom fonts from bundle: \(bundle.bundleIdentifier ?? "Unknown Bundle")")
+        
+        // Log bundle info and contents
+        bundle.logBundleInfo()
+        bundle.logBundleContents()
+        
         for font in FontName.allCases {
-            guard let url = Bundle.main.url(forResource: font.displayName, withExtension: "ttf") else { return }
-            CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
+            guard let url = bundle.url(forResource: font.displayName, withExtension: "ttf") else { 
+                print("⚠️ Could not find font file: \(font.displayName).ttf in bundle")
+                continue 
+            }
+            let result = CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
+            if result {
+                print("✅ Successfully registered font: \(font.displayName)")
+            } else {
+                print("❌ Failed to register font: \(font.displayName)")
+            }
         }
     }
 }

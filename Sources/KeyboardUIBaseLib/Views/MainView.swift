@@ -60,7 +60,7 @@ public struct MainView: View {
     }
     
    public var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 0) {  
             WVSpacer(10)
             header
             WVSpacer(10)
@@ -71,8 +71,6 @@ public struct MainView: View {
                     removal: .move(edge: .bottom).combined(with: .opacity)
                 ))
                 .animation(.easeInOut(duration: 0.3), value: currentKeyboard)
-            
-            
         }
 
     }
