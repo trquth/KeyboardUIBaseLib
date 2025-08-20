@@ -24,8 +24,7 @@ struct DeleteTooltip: View {
                 Circle().fill(Color(hex:"#5492F6"))
                     .frame(width: 28, height: 28)
                     .overlay(
-                        Image("close_ico")
-                            .resizable()
+                        WImage("close_ico")
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 8, height: 8)
                         )

@@ -141,8 +141,7 @@ struct WIconTextButton: View {
     // MARK: - Icon View Builder
     @ViewBuilder
     private var iconView: some View {
-        Image(_iconName)
-            .resizable()
+        WImage(_iconName)
             .renderingMode(.template)
             .foregroundColor(effectiveForegroundColor)
             .frame(width: effectiveIconSize.width, height: effectiveIconSize.height)
