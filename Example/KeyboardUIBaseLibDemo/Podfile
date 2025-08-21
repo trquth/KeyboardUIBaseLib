@@ -9,7 +9,7 @@ target 'KeyboardUIBaseLibDemo' do
   pod 'KeyboardUIBaseLib', :path => '../../'
 end
 
-target 'MyKeyboardExtension' do
+target 'MyKeyboard2Extension' do
   # Use static frameworks for app extensions (more reliable)
   use_frameworks! :linkage => :static
   

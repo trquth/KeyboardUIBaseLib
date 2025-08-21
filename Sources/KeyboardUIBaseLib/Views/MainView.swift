@@ -76,7 +76,7 @@ public struct MainView: View {
         VStack(spacing: 0) {  
             WVSpacer(10)
             header
-            WVSpacer(10)
+            WVSpacer(2)
             WSpacer()
             keyboard
                 .transition(.asymmetric(
@@ -190,6 +190,7 @@ public struct MainView: View {
     .background(Color.white)
     .frame(height: 300)
     .background(.pink)
+    .border(Color.yellow, width: 1)
     .loadCustomFonts()
 }
 

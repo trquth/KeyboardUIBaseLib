@@ -244,6 +244,7 @@ struct CustomKeyboardV2View: View {
 
 #Preview("Custom Keyboard - Letters") {
     CustomKeyboardV2View()
+        .border(.black, width: 1)
 }
 
 #Preview("Custom Keyboard - With Callback") {
