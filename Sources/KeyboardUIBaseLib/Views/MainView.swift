@@ -18,35 +18,53 @@ public struct MainView: View {
     @State private var inputText: String = ""
     @State private var lastPressedKey: String = ""
     @State private var currentKeyboard: KeyboardType = .text
+    @State private var currentTypingInput: String = ""
     
     // Callback functions
     private let onTextChanged: ((String) -> Void)?
     private let onKeyPressed: ((String) -> Void)?
     private let onTextSubmitted: ((String) -> Void)?
+    private let onTextReplacementRequested: ((String) -> [TextReplacement])?
+    private let onTextReplacementSelected: ((TextReplacement) -> Void)?
+    
+    // Text replacement suggestions
+    @State private var textReplacements: [TextReplacement] = []
     
     public init(
         onTextChanged: ((String) -> Void)? = nil,
         onKeyPressed: ((String) -> Void)? = nil,
-        onTextSubmitted: ((String) -> Void)? = nil
+        onTextSubmitted: ((String) -> Void)? = nil,
+        onTextReplacementRequested: ((String) -> [TextReplacement])? = nil,
+        onTextReplacementSelected: ((TextReplacement) -> Void)? = nil
     ) {
         self.onTextChanged = onTextChanged
         self.onKeyPressed = onKeyPressed
         self.onTextSubmitted = onTextSubmitted
+        self.onTextReplacementRequested = onTextReplacementRequested
+        self.onTextReplacementSelected = onTextReplacementSelected
     }
     
     private var header : some View {
-        HeaderSectionView(currentKeyboard: $currentKeyboard, onSwitchKeyboard: {
-            switch $0 {
-            case .sona:
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    currentKeyboard = .text
+        HeaderSectionView(
+            currentKeyboard: $currentKeyboard, 
+            onSwitchKeyboard: { keyboardType in
+                switch keyboardType {
+                case .sona:
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        currentKeyboard = .text
+                    }
+                default:
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        currentKeyboard = .sona
+                    }
                 }
-            default:
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    currentKeyboard = .sona
-                }
+            },
+            textReplacements: textReplacements,
+            currentInput: currentTypingInput,
+            onTextReplacementSelected: { replacement in
+                onTextReplacementSelected?(replacement)
             }
-        })
+        )
     }
     
     @ViewBuilder
@@ -121,9 +139,26 @@ public struct MainView: View {
     private func handleTextKey(_ key: String) {
         // Add regular text characters to input
         inputText += key
+        
+        // Update current typing input for text replacement suggestions
+        updateCurrentTypingInput()
+        
         onTextChanged?(inputText)
         onKeyPressed?(key)
         print("📝 Added text: '\(key)' -> Current input: '\(inputText)'")
+        print("🔍 Current typing input: '\(currentTypingInput)'")
+    }
+    
+    private func updateCurrentTypingInput() {
+        // Get the current word being typed (characters after the last space/punctuation)
+        let separators = CharacterSet.whitespacesAndNewlines.union(.punctuationCharacters)
+        let words = inputText.components(separatedBy: separators)
+        currentTypingInput = words.last ?? ""
+        
+        // Request text replacement suggestions from the keyboard controller
+        if let replacements = onTextReplacementRequested?(currentTypingInput) {
+            textReplacements = replacements
+        }
     }
     
     private func handleSpecialKey(key: String, specialKey: KeyboardLayout.SpecialKey) {
@@ -132,12 +167,15 @@ public struct MainView: View {
         switch specialKey {
         case .space:
             inputText += " "
+            currentTypingInput = "" // Clear typing input on space
+            textReplacements = [] // Clear text replacement suggestions
             onTextChanged?(inputText)
             print("🎯 Added space -> Current input: '\(inputText)'")
             
         case .delete:
             if !inputText.isEmpty {
                 inputText.removeLast()
+                updateCurrentTypingInput() // Update typing input after delete
                 onTextChanged?(inputText)
                 print("🎯 Deleted character -> Current input: '\(inputText)'")
             }

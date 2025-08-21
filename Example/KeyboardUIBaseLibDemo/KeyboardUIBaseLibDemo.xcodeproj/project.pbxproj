@@ -74,11 +74,6 @@
 			path = KeyboardUIBaseLibDemo;
 			sourceTree = "<group>";
 		};
-		23CE87BE2E56BE3B005ED910 /* MyKeyboardExtension */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = MyKeyboardExtension;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -105,7 +100,6 @@
 			isa = PBXGroup;
 			children = (
 				2387BEDE2E55C7CB00260875 /* KeyboardUIBaseLibDemo */,
-				23CE87BE2E56BE3B005ED910 /* MyKeyboardExtension */,
 				231F71C82E56F631005DB794 /* MyKeyboard2Extension */,
 				2387BEDD2E55C7CB00260875 /* Products */,
 				556B0C5B12E6EC29AEAF85DF /* Pods */,
