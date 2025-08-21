@@ -19,7 +19,20 @@ public struct MainView: View {
     @State private var lastPressedKey: String = ""
     @State private var currentKeyboard: KeyboardType = .text
     
-    public init() {}
+    // Callback functions
+    private let onTextChanged: ((String) -> Void)?
+    private let onKeyPressed: ((String) -> Void)?
+    private let onTextSubmitted: ((String) -> Void)?
+    
+    public init(
+        onTextChanged: ((String) -> Void)? = nil,
+        onKeyPressed: ((String) -> Void)? = nil,
+        onTextSubmitted: ((String) -> Void)? = nil
+    ) {
+        self.onTextChanged = onTextChanged
+        self.onKeyPressed = onKeyPressed
+        self.onTextSubmitted = onTextSubmitted
+    }
     
     private var header : some View {
         HeaderSectionView(currentKeyboard: $currentKeyboard, onSwitchKeyboard: {
@@ -81,11 +94,15 @@ public struct MainView: View {
             // Handle delete from emoji keyboard
             if !inputText.isEmpty {
                 inputText.removeLast()
+                onTextChanged?(inputText)
+                onKeyPressed?("⌫")
                 print("🎯 Deleted character from emoji keyboard -> Current input: '\(inputText)'")
             }
         } else {
             // Add emoji to input
             inputText += emoji
+            onTextChanged?(inputText)
+            onKeyPressed?(emoji)
             print("😀 Added emoji: '\(emoji)' -> Current input: '\(inputText)'")
         }
     }
@@ -104,23 +121,30 @@ public struct MainView: View {
     private func handleTextKey(_ key: String) {
         // Add regular text characters to input
         inputText += key
+        onTextChanged?(inputText)
+        onKeyPressed?(key)
         print("📝 Added text: '\(key)' -> Current input: '\(inputText)'")
     }
     
     private func handleSpecialKey(key: String, specialKey: KeyboardLayout.SpecialKey) {
+        onKeyPressed?(key)
+        
         switch specialKey {
         case .space:
             inputText += " "
+            onTextChanged?(inputText)
             print("🎯 Added space -> Current input: '\(inputText)'")
             
         case .delete:
             if !inputText.isEmpty {
                 inputText.removeLast()
+                onTextChanged?(inputText)
                 print("🎯 Deleted character -> Current input: '\(inputText)'")
             }
             
         case .enter:
             print("🎯 Enter pressed -> Submit: '\(inputText)'")
+            onTextSubmitted?(inputText)
             // Handle text submission here
             // inputText = "" // Optionally clear input
             
@@ -139,6 +163,7 @@ public struct MainView: View {
             
         case .dot:
             inputText += "."
+            onTextChanged?(inputText)
             print("🎯 Added dot -> Current input: '\(inputText)'")
             
         case .emoji:
@@ -151,11 +176,21 @@ public struct MainView: View {
 }
 
 #Preview(traits: .sizeThatFitsLayout) {
-    MainView()
-        .background(Color.white)
-        .frame(height: 300)
-        .background(.pink)
-        .loadCustomFonts()
+    MainView(
+        onTextChanged: { text in
+            print("📱 Text changed: '\(text)'")
+        },
+        onKeyPressed: { key in
+            print("⌨️ Key pressed: '\(key)'")
+        },
+        onTextSubmitted: { text in
+            print("✅ Text submitted: '\(text)'")
+        }
+    )
+    .background(Color.white)
+    .frame(height: 300)
+    .background(.pink)
+    .loadCustomFonts()
 }
 
 #Preview("Text"){

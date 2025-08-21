@@ -11,14 +11,24 @@ import KeyboardUIBaseLib
 struct ContentView: View {
     var body: some View {
         VStack {
-            MainView()
+            Spacer()
+                
+            MainView(
+                onTextChanged: { text in
+                    print("📱 Text changed: '\(text)'")
+                },
+                onKeyPressed: { key in
+                    print("⌨️ Key pressed: '\(key)'")
+                },
+                onTextSubmitted: { text in
+                    print("✅ Text submitted: '\(text)'")
+                }
+            )
         }
-        .padding()
     }
 }
 
 #Preview {
-   // test
     ContentView()
         .frame(height: 300)
         .loadCustomFonts()

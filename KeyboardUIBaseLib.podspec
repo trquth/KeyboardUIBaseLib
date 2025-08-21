@@ -36,7 +36,7 @@ TODO: Add long description of the pod here.
     'KeyboardUIBaseLibAssets' => ['Sources/KeyboardUIBaseLib/Resources/**/*']
   }
 
-  s.frameworks = 'SwiftUI', 'Foundation'
+  s.frameworks = 'Foundation', 'SwiftUI'
   s.swift_version = '5.0'
   
   # Support for app extensions
