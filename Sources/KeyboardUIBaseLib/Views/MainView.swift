@@ -27,8 +27,8 @@ public struct MainView: View {
     private let onTextReplacementRequested: ((String) -> [TextReplacement])?
     private let onTextReplacementSelected: ((TextReplacement) -> Void)?
     
-    // Text replacement suggestions
-    @State private var textReplacements: [TextReplacement] = []
+    // Text replacement view model
+    @StateObject private var textReplacementsVM = TextReplacementVM()
     
     public init(
         onTextChanged: ((String) -> Void)? = nil,
@@ -59,7 +59,7 @@ public struct MainView: View {
                     }
                 }
             },
-            textReplacements: textReplacements,
+            textReplacements: textReplacementsVM.textReplacements,
             currentInput: currentTypingInput,
             onTextReplacementSelected: { replacement in
                 onTextReplacementSelected?(replacement)
@@ -157,7 +157,7 @@ public struct MainView: View {
         
         // Request text replacement suggestions from the keyboard controller
         if let replacements = onTextReplacementRequested?(currentTypingInput) {
-            textReplacements = replacements
+            textReplacementsVM.textReplacements = replacements
         }
     }
     
@@ -168,7 +168,7 @@ public struct MainView: View {
         case .space:
             inputText += " "
             currentTypingInput = "" // Clear typing input on space
-            textReplacements = [] // Clear text replacement suggestions
+            textReplacementsVM.textReplacements = [] // Clear text replacement suggestions
             onTextChanged?(inputText)
             print("🎯 Added space -> Current input: '\(inputText)'")
             

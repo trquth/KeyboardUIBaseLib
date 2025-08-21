@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-
-
 struct HeaderSectionView: View {
     @Binding var currentKeyboard: KeyboardType
     // Callback for switching back to text keyboard
@@ -38,7 +36,7 @@ struct HeaderSectionView: View {
     // Filter suggestions based on current input
     private var filteredSuggestions: [TextReplacement] {
         if currentInput.isEmpty {
-            return Array(textReplacements.prefix(5)) // Show up to 5 suggestions
+            return []
         }
         
         let filtered = textReplacements.filter { replacement in
@@ -48,58 +46,30 @@ struct HeaderSectionView: View {
         return Array(filtered.prefix(5)) // Show up to 5 matching suggestions
     }
     
-    private let words: [String] = ["are", "and", "ask"]
-    
+    private var filteredSuggestionsCount: Int {
+        return filteredSuggestions.count
+    }
+        
     var body: some View {
         HStack {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 0) {
-                    if !filteredSuggestions.isEmpty {
-                        // Show text replacement suggestions
-                        ForEach(Array(filteredSuggestions.enumerated()), id: \.element.id) { index, suggestion in
-                            Button(action: {
-                                onTextReplacementSelected?(suggestion)
-                            }) {
-                                VStack(spacing: 2) {
-                                    WText(suggestion.shortcut)
-                                        .fontSize(12)
-                                        .foregroundColor(.blue)
-                                        .fontWeight(.medium)
-                                    
-                                    WText(suggestion.replacement.prefix(20) + (suggestion.replacement.count > 20 ? "..." : ""))
-                                        .fontSize(10)
-                                        .foregroundColor(.secondary)
-                                        .lineLimit(1)
-                                }
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 4)
-                            .background(Color.blue.opacity(0.1))
-                            .cornerRadius(8)
-                            .padding(.horizontal, 4)
-                            
-                            // Add divider between suggestions
-                            if index < filteredSuggestions.count - 1 {
-                                Rectangle()
-                                    .fill(Color.gray.opacity(0.3))
-                                    .frame(width: 1, height: 30)
-                                    .padding(.horizontal, 4)
-                            }
-                        }
-                    } else {
-                        // Show default word suggestions when no text replacements match
-                        ForEach(Array(words.enumerated()), id: \.offset) { index, word in
-                            WText(word)
+                    ForEach(Array(filteredSuggestions.enumerated()), id: \.element.id) { index, suggestion in
+                        Button{
+                            onTextReplacementSelected?(suggestion)
+                        }label: {
+                            WText(suggestion.replacement)
                                 .fontSize(17)
                                 .foregroundColor(.primary)
                                 .padding(.horizontal, 16)
-                            
-                            // Add divider between words (not after the last word)
-                            if index < words.count - 1 {
-                                Rectangle()
-                                    .fill(Color.gray.opacity(0.3))
-                                    .frame(width: 1, height: 20)
-                            }
+                        }
+                      
+                        
+                        // Add divider between words (not after the last word)
+                        if index < filteredSuggestionsCount - 1 {
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.3))
+                                .frame(width: 1, height: 20)
                         }
                     }
                 }
