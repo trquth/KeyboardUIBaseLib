@@ -47,6 +47,7 @@ public struct MainView: View {
     private var header : some View {
         HeaderSectionView(
             currentKeyboard: $currentKeyboard, 
+            currentInput: $currentTypingInput,
             onSwitchKeyboard: { keyboardType in
                 switch keyboardType {
                 case .sona:
@@ -60,9 +61,11 @@ public struct MainView: View {
                 }
             },
             textReplacements: textReplacementsVM.textReplacements,
-            currentInput: currentTypingInput,
             onTextReplacementSelected: { replacement in
                 onTextReplacementSelected?(replacement)
+            },
+            onClearTextReplacements: {
+                textReplacementsVM.textReplacements = []
             }
         )
     }

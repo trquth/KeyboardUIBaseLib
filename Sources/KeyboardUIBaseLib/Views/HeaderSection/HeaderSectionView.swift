@@ -9,32 +9,37 @@ import SwiftUI
 
 struct HeaderSectionView: View {
     @Binding var currentKeyboard: KeyboardType
+    @Binding var currentInput: String
+
     // Callback for switching back to text keyboard
     let onSwitchKeyboard: ((KeyboardType) -> Void)?
     
     // Text replacement suggestions
     let textReplacements: [TextReplacement]
-    let currentInput: String
     let onTextReplacementSelected: ((TextReplacement) -> Void)?
+    let onClearTextReplacements: (() -> Void)?
     
     init(
         currentKeyboard: Binding<KeyboardType>,
+        currentInput: Binding<String>,
         onSwitchKeyboard: ((KeyboardType) -> Void)? = nil,
         textReplacements: [TextReplacement] = [],
-        currentInput: String = "",
-        onTextReplacementSelected: ((TextReplacement) -> Void)? = nil
+        onTextReplacementSelected: ((TextReplacement) -> Void)? = nil,
+        onClearTextReplacements: (() -> Void)? = nil
     ) {
         self._currentKeyboard = currentKeyboard
+        self._currentInput = currentInput
         self.onSwitchKeyboard = onSwitchKeyboard
         self.textReplacements = textReplacements
-        self.currentInput = currentInput
         self.onTextReplacementSelected = onTextReplacementSelected
+        self.onClearTextReplacements = onClearTextReplacements
     }
     
     
     
     // Filter suggestions based on current input
     private var filteredSuggestions: [TextReplacement] {
+        print("Filtering suggestions for input: \(currentInput)")
         if currentInput.isEmpty {
             return []
         }
@@ -57,19 +62,20 @@ struct HeaderSectionView: View {
                     ForEach(Array(filteredSuggestions.enumerated()), id: \.element.id) { index, suggestion in
                         Button{
                             onTextReplacementSelected?(suggestion)
+                            currentInput = "" // Clear current input after selection
+                            onClearTextReplacements?() // Clear suggestions after selection
                         }label: {
                             WText(suggestion.replacement)
                                 .fontSize(17)
                                 .foregroundColor(.primary)
                                 .padding(.horizontal, 16)
                         }
-                      
-                        
                         // Add divider between words (not after the last word)
                         if index < filteredSuggestionsCount - 1 {
-                            Rectangle()
-                                .fill(Color.gray.opacity(0.3))
-                                .frame(width: 1, height: 20)
+                            Divider()
+                                .frame(height: 20)
+                                .background(Color.gray.opacity(0.3))
+                                .padding(.horizontal, 5)
                         }
                     }
                 }
@@ -96,11 +102,10 @@ struct HeaderSectionView: View {
         TextReplacement(shortcut: "addr", replacement: "123 Main Street, City, State 12345")
     ]
     
-    return HeaderSectionView(
+    HeaderSectionView(
         currentKeyboard: .constant(.text),
-        onSwitchKeyboard: nil,
+        currentInput: .constant("o"), onSwitchKeyboard: nil,
         textReplacements: sampleReplacements,
-        currentInput: "o",
         onTextReplacementSelected: { replacement in
             print("Selected: \(replacement.shortcut) -> \(replacement.replacement)")
         }
