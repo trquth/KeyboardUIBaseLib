@@ -1,0 +1,16 @@
+PODS:
+  - KeyboardUIBaseLib (0.1.0)
+
+DEPENDENCIES:
+  - KeyboardUIBaseLib (from `../../`)
+
+EXTERNAL SOURCES:
+  KeyboardUIBaseLib:
+    :path: "../../"
+
+SPEC CHECKSUMS:
+  KeyboardUIBaseLib: e0420ed198d29858e90966d54628cc49dec60873
+
+PODFILE CHECKSUM: 0e7ed7f21ec34a42e442da89a1cbc70bf7cfc893
+
+COCOAPODS: 1.16.2

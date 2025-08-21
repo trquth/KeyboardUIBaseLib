@@ -1,0 +1,52 @@
+# Uncomment the next line to define a global platform for your project
+platform :ios, '18.2'
+
+target 'KeyboardUIBaseLibDemo' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for KeyboardUIBaseLibDemo
+  pod 'KeyboardUIBaseLib', :path => '../../'
+end
+
+target 'MyKeyboardExtension' do
+  # Use static frameworks for app extensions (more reliable)
+  use_frameworks! :linkage => :static
+  
+  # Pods for MyKeyboardExtension
+  pod 'KeyboardUIBaseLib', :path => '../../'
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      # Fix code signing issues
+      config.build_settings['CODE_SIGNING_REQUIRED'] = 'NO'
+      config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+      config.build_settings['CODE_SIGN_IDENTITY'] = ''
+      
+      # Ensure iOS deployment target consistency
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '17.0'
+      
+      # Fix other common issues
+      config.build_settings['ONLY_ACTIVE_ARCH'] = 'NO'
+      
+      # App Extension API only for extensions
+      if target.name.include?('KeyboardUIBaseLib')
+        config.build_settings['APPLICATION_EXTENSION_API_ONLY'] = 'YES'
+      end
+      
+      # Handle library search paths
+      if config.build_settings['LD_RUNPATH_SEARCH_PATHS']
+        config.build_settings['LD_RUNPATH_SEARCH_PATHS'] << ' $(inherited)'
+      else
+        config.build_settings['LD_RUNPATH_SEARCH_PATHS'] = '$(inherited)'
+      end
+    end
+  end
+  
+  # Ensure proper linking for app extensions
+  installer.pods_project.build_configurations.each do |config|
+    config.build_settings['APPLICATION_EXTENSION_API_ONLY'] = 'YES'
+  end
+end
