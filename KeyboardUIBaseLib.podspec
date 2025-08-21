@@ -39,6 +39,14 @@ TODO: Add long description of the pod here.
   s.frameworks = 'SwiftUI', 'Foundation'
   s.swift_version = '5.0'
   
+  # Support for app extensions
+  s.pod_target_xcconfig = {
+    'CODE_SIGN_IDENTITY' => '',
+    'CODE_SIGNING_REQUIRED' => 'NO',
+    'CODE_SIGNING_ALLOWED' => 'NO',
+    'APPLICATION_EXTENSION_API_ONLY' => 'YES'
+  }
+  
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.dependency 'AFNetworking', '~> 2.3'
 end
