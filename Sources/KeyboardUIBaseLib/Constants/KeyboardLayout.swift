@@ -26,7 +26,7 @@ struct KeyboardLayout {
         case letters = "ABC"
         case globe = "🌐"
         case space = "space"
-        case enter = "↩"
+        case enter = "enter"
         case dot = "."
         case emoji = "😀"
         

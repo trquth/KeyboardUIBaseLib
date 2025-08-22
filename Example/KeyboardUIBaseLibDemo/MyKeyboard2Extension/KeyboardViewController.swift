@@ -156,48 +156,7 @@ class KeyboardViewController: UIInputViewController {
         textReplacementsVM.textReplacements = lexicon.entries.map { entry in
             TextReplacement(shortcut: entry.userInput, replacement: entry.documentText)
         }
-        
-        // Add some built-in shortcuts if not already present
-        addBuiltInShortcuts()
-        
-        print("🔄 Processed \(textReplacementsVM.textReplacements.count) text replacements")
     }
-    
-    private func addBuiltInShortcuts() {
-        let builtInShortcuts = [
-            ("omw", "On my way!"),
-            ("brb", "Be right back"),
-            ("ttyl", "Talk to you later"),
-            ("lol", "😂"),
-            ("omg", "Oh my god"),
-            ("btw", "By the way"),
-            ("fyi", "For your information"),
-            ("imho", "In my humble opinion"),
-            ("tbh", "To be honest"),
-            ("afaik", "As far as I know")
-        ]
-        
-        for (shortcut, replacement) in builtInShortcuts {
-            // Only add if not already defined by user
-            if !textReplacementsVM.textReplacements.contains(where: { $0.shortcut.lowercased() == shortcut.lowercased() }) {
-                textReplacementsVM.textReplacements.append(TextReplacement(shortcut: shortcut, replacement: replacement))
-            }
-        }
-    }
-    
-//    private func getTextReplacements(for input: String) -> [TextReplacement] {
-//        currentTypingInput = input
-//        
-//        if input.isEmpty {
-//            return Array(textReplacements.prefix(5))
-//        }
-//        
-//        let filtered = textReplacements.filter { replacement in
-//            replacement.shortcut.lowercased().hasPrefix(input.lowercased())
-//        }
-//        
-//        return Array(filtered.prefix(5))
-//    }
     
     private func handleTextReplacementSelected(_ replacement: TextReplacement) {
         print("🔄 Text replacement selected: \(replacement.shortcut) → \(replacement.replacement)")
@@ -260,8 +219,19 @@ class KeyboardViewController: UIInputViewController {
     private func handleTextSubmitted(_ text: String) {
         // Called when user presses return/enter
         print("✅ KeyboardViewController: Text submitted: '\(text)'")
-        // The actual newline insertion is handled by handleReturnKey when onKeyPressed is called
-        // This callback is mainly for notification that text was "submitted"
+        print("📊 Text length: \(text.count) characters")
+        
+        // Clear text replacement suggestions after submit
+        textReplacementsVM.textReplacements = []
+        currentTypingInput = ""
+        
+        // Additional submit logic can be added here:
+        // - Analytics tracking
+        // - Text validation
+        // - Custom submit behaviors based on app context
+        
+        // Notify the hosting app about the submission
+        // The app can handle this for specific actions like sending messages
     }
     
     // MARK: - Specific Key Handlers
@@ -271,7 +241,45 @@ class KeyboardViewController: UIInputViewController {
     }
     
     private func handleReturnKey() {
-        textDocumentProxy.insertText("\n")
+        // Get the current text context before inserting newline
+        let currentText = textDocumentProxy.documentContextBeforeInput ?? ""
+        print("Current text before return: '\(currentText)'")
+        
+        // Check the return key type to determine behavior
+        let returnKeyType = textDocumentProxy.returnKeyType
+        print("Return key type: \(returnKeyType?.rawValue)")
+        
+        switch returnKeyType {
+        case .send:
+            // For messaging apps - submit without newline and dismiss keyboard
+            print("📤 Send action triggered - dismissing keyboard")
+            handleTextSubmitted(currentText)
+            requestKeyboardDismissal()
+            
+        case .search:
+            // For search fields - submit search and dismiss keyboard
+            print("🔍 Search action triggered - dismissing keyboard")
+            handleTextSubmitted(currentText)
+            requestKeyboardDismissal()
+            
+        case .done, .go:
+            // For forms - submit and dismiss keyboard
+            print("✅ Done/Go action triggered - dismissing keyboard")
+            handleTextSubmitted(currentText)
+            requestKeyboardDismissal()
+            
+        case .join:
+            // For join actions - submit and dismiss keyboard
+            print("🔗 Join action triggered - dismissing keyboard")
+            handleTextSubmitted(currentText)
+            requestKeyboardDismissal()
+            
+        default:
+            // Default behavior - insert newline and submit (keep keyboard open)
+            print("📝 Default return - inserting newline")
+            textDocumentProxy.insertText("\n")
+            handleTextSubmitted(currentText)
+        }
     }
     
     private func handleSpaceKey() {
@@ -304,10 +312,35 @@ class KeyboardViewController: UIInputViewController {
     
     // MARK: - Keyboard Utilities
     
+    private func requestKeyboardDismissal() {
+        // For keyboard extensions, we can't directly dismiss the keyboard
+        // Instead, we need to signal completion to the host app
+        print("🔽 Attempting to signal keyboard dismissal")
+        
+        // Method 1: Use dismissKeyboard() from UIInputViewController if available
+        // This is the proper way to request dismissal in iOS
+        dismissKeyboard()
+        
+        // Method 2: For certain return key types (.send, .search, .done), 
+        // the system and host app may automatically dismiss the keyboard
+        
+        // Method 3: Advance to next input mode can sometimes trigger dismissal
+        // advanceToNextInputMode()
+        
+        print("🔽 Keyboard dismissal requested via UIInputViewController.dismissKeyboard()")
+    }
+    
     private func handleDismissKeyboard() {
-        // Note: Keyboard extensions typically can't dismiss themselves
+        // Note: Keyboard extensions typically can't dismiss themselves directly
         // This would need to be handled by the host app
         print("Keyboard dismiss requested")
+        requestKeyboardDismissal()
+    }
+    
+    // Public method to dismiss keyboard that can be called from SwiftUI views
+    func dismissCustomKeyboard() {
+        print("🔽 Public dismiss method called")
+        requestKeyboardDismissal()
     }
     
     override func advanceToNextInputMode() {
