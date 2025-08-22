@@ -56,6 +56,7 @@ struct ChipView: View {
             .cornerRadius(106)
             .horizontalPadding( size.horizontalPadding)
             .verticalPadding(size.verticalPadding)
+            .disabled()
     }
 }
 

@@ -290,10 +290,13 @@ extension WTextButton {
     }
     
     // State modifiers
-    func disabled() -> WTextButton {
+    func disabled(isDisable: Bool = true) -> WTextButton {
         var copy = self
-        copy._backgroundColor = Color.gray.opacity(0.3)
-        copy._foregroundColor = .gray
+        if(!isDisable) {
+            return copy
+        }
+        copy._backgroundColor = Color(hex: "#F6F5F4")
+        copy._foregroundColor = .black.opacity(0.3)
         return copy
     }
 }

@@ -65,9 +65,6 @@ struct TonesView: View {
                             ) {
                             }
                         }
-                        AddToneButton {
-                            
-                        }
                     }
                     .padding(.horizontal, 25)
                     .frame(maxHeight:.infinity,alignment:.top)

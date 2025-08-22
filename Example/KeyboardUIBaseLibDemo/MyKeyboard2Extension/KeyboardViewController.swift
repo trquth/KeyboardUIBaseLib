@@ -134,21 +134,24 @@ class KeyboardViewController: UIInputViewController {
         // The app is about to change the document's contents. Perform any preparation here.
     }
     
+    //When text input changes, this func will call with the updated text input.
     override func textDidChange(_ textInput: UITextInput?) {
-        // The app has just changed the document's contents, the document context has been updated.
+        print("🔄 KeyboardViewController: Document context changed")
+        
+        let inputText = textDocumentProxy.documentContextBeforeInput ?? ""
+        if inputText.isEmpty {
+            //Reset current typing input if there's no text
+            currentTypingInput = ""
+            return;
+        }
+        
+            
+        let textInputChars = textDocumentProxy.documentContextBeforeInput ?? ""
+        print("Text before input: \(textDocumentProxy.documentContextBeforeInput ?? "")")
+        print("Text after input: \(textDocumentProxy.documentContextAfterInput ?? "")")
+        print("Current input: \(textDocumentProxy.documentIdentifier.uuidString)")
     }
     
-    // MARK: - UILexicon & Text Replacement Methods
-    
-//    private func loadSupplementaryLexicon() {
-//        requestSupplementaryLexicon { [weak self] lexicon in
-//            DispatchQueue.main.async {
-//                self?.supplementaryLexicon = lexicon
-//                self?.processLexiconEntries()
-//                print("📚 UILexicon loaded with \(lexicon.entries.count) entries")
-//            }
-//        }
-//    }
     
     private func processLexiconEntries() {
         guard let lexicon = supplementaryLexicon else { return }
@@ -385,34 +388,10 @@ class KeyboardViewController: UIInputViewController {
         textReplacementsVM.textReplacements.removeAll()
         
         // Process lexicon entries
-        for entry in lexicon.entries {
+        for entry in lexicon.entries.filter({ !$0.userInput.isEmpty}) {
+                
             textReplacementsVM.textReplacements.append(TextReplacement(shortcut: entry.userInput, replacement: entry.documentText))
-            print("🔄 Text replacement: '\(entry.userInput)' -> '\(entry.documentText)'")
-        }
-        
-        // Add some common built-in replacements if not already defined
-        addBuiltInReplacements()
-    }
-    
-    private func addBuiltInReplacements() {
-        let builtInReplacements = [
-            "omw": "On my way!",
-            "brb": "Be right back",
-            "ttyl": "Talk to you later",
-            "lol": "😂",
-            "omg": "Oh my god",
-            "btw": "By the way",
-            "fyi": "For your information",
-            "imho": "In my humble opinion",
-            "afaik": "As far as I know",
-            "tgif": "Thank God it's Friday"
-        ]
-        
-        for (shortcut, replacement) in builtInReplacements {
-            // Only add if not already defined by user
-            if !textReplacementsVM.textReplacements.contains(where: { $0.shortcut.lowercased() == shortcut.lowercased() }) {
-                textReplacementsVM.textReplacements.append(TextReplacement(shortcut: shortcut, replacement: replacement))
-            }
+            //print("🔄 Text replacement: '\(entry.userInput)' -> '\(entry.documentText)'")
         }
     }
     

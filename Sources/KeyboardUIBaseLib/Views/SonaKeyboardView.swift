@@ -19,6 +19,7 @@ struct SonaKeyboardView: View {
             .buttonSize(width: 45, height: 45)
             .iconSize(width: 15.76, height: 18.91)
             .cornerRadius(16)
+            .disabled()
     }
     
     private var translationButton: some View {
@@ -33,6 +34,7 @@ struct SonaKeyboardView: View {
         .buttonSize(width: 45, height: 45)
         .iconSize(width: 25.22, height: 20)
         .cornerRadius(16)
+        .disabled()
     }
     
     private var revertButton: some View {
@@ -47,6 +49,7 @@ struct SonaKeyboardView: View {
         .buttonSize(width: 45, height: 45)
         .iconSize(width: 20.56, height: 18.91)
         .cornerRadius(16)
+        .disabled()
     }
     
     private var goBackButton: some View {
@@ -57,6 +60,7 @@ struct SonaKeyboardView: View {
             .buttonSize(width: 45, height: 45)
             .iconSize(width: 14.41, height: 18.91)
             .cornerRadius(16)
+            .disabled()
     }
     
     private var forwardButton: some View {
@@ -67,6 +71,7 @@ struct SonaKeyboardView: View {
             .buttonSize(width: 45, height: 45)
             .iconSize(width: 14.41, height: 18.91)
             .cornerRadius(16)
+            .disabled()
     }
     
     private var suggestionInput: some View {
@@ -137,4 +142,5 @@ struct SonaKeyboardView: View {
 
 #Preview {
     SonaKeyboardView()
+        .keyboardFrame()
 }

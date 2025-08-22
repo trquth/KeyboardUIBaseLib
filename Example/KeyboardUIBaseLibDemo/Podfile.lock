@@ -1,15 +1,22 @@
 PODS:
-  - KeyboardUIBaseLib (0.1.0)
+  - Alamofire (5.10.2)
+  - KeyboardUIBaseLib (0.1.0):
+    - Alamofire (= 5.10.2)
 
 DEPENDENCIES:
   - KeyboardUIBaseLib (from `../../`)
+
+SPEC REPOS:
+  trunk:
+    - Alamofire
 
 EXTERNAL SOURCES:
   KeyboardUIBaseLib:
     :path: "../../"
 
 SPEC CHECKSUMS:
-  KeyboardUIBaseLib: 887516e18ea7121be7655d8fdb05133b887dd4b1
+  Alamofire: 7193b3b92c74a07f85569e1a6c4f4237291e7496
+  KeyboardUIBaseLib: fdb1c8c9f4d7122d37c814e1dc79c35262a20446
 
 PODFILE CHECKSUM: 6b533ef9ad7e3b47089a90ce7b01fe383a6ae9f8
 

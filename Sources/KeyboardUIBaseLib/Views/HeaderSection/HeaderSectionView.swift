@@ -39,7 +39,7 @@ struct HeaderSectionView: View {
     
     // Filter suggestions based on current input
     private var filteredSuggestions: [TextReplacement] {
-        print("Filtering suggestions for input: \(currentInput)")
+        //print("Filtering suggestions for input: \(currentInput)")
         if currentInput.isEmpty {
             return []
         }

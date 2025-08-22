@@ -150,7 +150,7 @@ struct CustomKeyboardV2View: View {
         asset: AssetIconEnum,
         key: String
     ) -> some View {
-        print("Creating icon button for key: \(key) with asset: \(asset)")
+//        print("Creating icon button for key: \(key) with asset: \(asset)")
         let size = KeyboardLayout.getKeySize(for: key, in: 0)
         let iconSize = getIconSize(for: asset)
         let isShiftKey = key == KeyboardLayout.SpecialKey.shift.rawValue

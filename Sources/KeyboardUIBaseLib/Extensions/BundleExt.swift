@@ -66,6 +66,7 @@ extension Bundle {
     
     /// Log all files and directories in the bundle
     func logBundleContents() {
+        return
         print("=== Bundle Contents ===")
         
         guard let resourcePath = self.resourcePath else {
@@ -129,6 +130,7 @@ extension Bundle {
     
     /// Log basic bundle information
     func logBundleInfo() {
+        return
         print("=== Bundle Information ===")
         print("📦 Bundle path: \(self.bundlePath)")
         print("🏷️ Bundle identifier: \(self.bundleIdentifier ?? "Unknown")")
