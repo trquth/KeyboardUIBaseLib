@@ -179,5 +179,6 @@ struct EmojiButtonStyle: ButtonStyle {
         onBackToKeyboard: {
             print("Back to keyboard")
         }
-    )
+    ).frame(height:KeyboardConfiguration.KEYBOARD_HEIGHT)
+        .border(.yellow, width: 1)
 }

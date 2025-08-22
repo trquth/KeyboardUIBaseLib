@@ -39,6 +39,9 @@ TODO: Add long description of the pod here.
   s.frameworks = 'Foundation', 'SwiftUI'
   s.swift_version = '5.0'
   
+  # Dependencies
+  s.dependency 'Alamofire', '5.10.2'
+  
   # Support for app extensions
   s.pod_target_xcconfig = {
     'CODE_SIGN_IDENTITY' => '',
