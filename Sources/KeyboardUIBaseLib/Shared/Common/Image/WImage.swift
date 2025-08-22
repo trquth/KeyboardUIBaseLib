@@ -64,7 +64,7 @@ struct WImage: View {
         }
         return bundle
         #elseif SWIFT_PACKAGE
-        print("Using module bundle for resources")
+//        print("Using module bundle for resources")
         // For Swift Package Manager, we need to find the module bundle
         return Bundle.module
         #else

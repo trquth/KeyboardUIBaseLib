@@ -48,24 +48,24 @@ extension Font {
     // MARK: - Font Logging Functions
     /// Log all available fonts in the app to console
     static func logAllAvailableFonts() {
-        print("=== All Available Fonts in App ===")
+       // print("=== All Available Fonts in App ===")
         let sortedFamilies = UIFont.familyNames.sorted()
         
         for family in sortedFamilies {
-            print("📁 Font Family: \(family)")
+//            print("📁 Font Family: \(family)")
             let fontNames = UIFont.fontNames(forFamilyName: family).sorted()
             for fontName in fontNames {
-                print("   📝 \(fontName)")
+               // print("   📝 \(fontName)")
             }
-            print() // Empty line for readability
+           // print() // Empty line for readability
         }
         
-        print("📊 Total font families: \(sortedFamilies.count)")
+       // print("📊 Total font families: \(sortedFamilies.count)")
         let totalFonts = sortedFamilies.reduce(0) { count, family in
             return count + UIFont.fontNames(forFamilyName: family).count
         }
-        print("📊 Total fonts: \(totalFonts)")
-        print("=====================================\n")
+//        print("📊 Total fonts: \(totalFonts)")
+//        print("=====================================\n")
     }
     
     public static func registerCustomFonts() {

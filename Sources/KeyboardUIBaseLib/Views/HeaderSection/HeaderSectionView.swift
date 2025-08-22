@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct HeaderSectionView: View {
-    @Binding var currentKeyboard: KeyboardType
-    @Binding var currentInput: String
+    private var currentKeyboard: KeyboardType
+    private var currentInput: String
 
     // Callback for switching back to text keyboard
     let onSwitchKeyboard: ((KeyboardType) -> Void)?
@@ -20,15 +20,15 @@ struct HeaderSectionView: View {
     let onClearTextReplacements: (() -> Void)?
     
     init(
-        currentKeyboard: Binding<KeyboardType>,
-        currentInput: Binding<String>,
+        currentKeyboard: KeyboardType,
+        currentInput: String,
         onSwitchKeyboard: ((KeyboardType) -> Void)? = nil,
         textReplacements: [TextReplacement] = [],
         onTextReplacementSelected: ((TextReplacement) -> Void)? = nil,
         onClearTextReplacements: (() -> Void)? = nil
     ) {
-        self._currentKeyboard = currentKeyboard
-        self._currentInput = currentInput
+        self.currentKeyboard = currentKeyboard
+        self.currentInput = currentInput
         self.onSwitchKeyboard = onSwitchKeyboard
         self.textReplacements = textReplacements
         self.onTextReplacementSelected = onTextReplacementSelected
@@ -62,7 +62,6 @@ struct HeaderSectionView: View {
                     ForEach(Array(filteredSuggestions.enumerated()), id: \.element.id) { index, suggestion in
                         Button{
                             onTextReplacementSelected?(suggestion)
-                            currentInput = "" // Clear current input after selection
                             onClearTextReplacements?() // Clear suggestions after selection
                         }label: {
                             WText(suggestion.replacement)
@@ -86,7 +85,7 @@ struct HeaderSectionView: View {
                 .fill(Color.black)
                 .frame(width: 42, height: 42)
                 .onTapGesture {
-                    print("Switching to text keyboard \($currentKeyboard)")
+                    print("Switching to text keyboard \(currentKeyboard)")
                     onSwitchKeyboard?(currentKeyboard)
                 }
         }
@@ -103,8 +102,8 @@ struct HeaderSectionView: View {
     ]
     
     HeaderSectionView(
-        currentKeyboard: .constant(.text),
-        currentInput: .constant("o"), onSwitchKeyboard: nil,
+        currentKeyboard: .text,
+        currentInput: "o", onSwitchKeyboard: nil,
         textReplacements: sampleReplacements,
         onTextReplacementSelected: { replacement in
             print("Selected: \(replacement.shortcut) -> \(replacement.replacement)")

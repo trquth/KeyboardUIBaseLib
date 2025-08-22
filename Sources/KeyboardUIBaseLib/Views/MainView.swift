@@ -7,18 +7,8 @@
 
 import SwiftUI
 
-// MARK: - Keyboard Types
-enum KeyboardType {
-    case text        // CustomKeyboardV2View
-    case emoji       // EmojiKeyboardView
-    case sona        // SonaKeyboardView
-}
-
 public struct MainView: View {
-    @State private var inputText: String = ""
-    @State private var lastPressedKey: String = ""
-    @State private var currentKeyboard: KeyboardType = .text
-    @State private var currentTypingInput: String = ""
+    @EnvironmentObject private var keyboardInputVM: KeyboardInputVM
     
     // Callback functions
     private let onTextChanged: ((String) -> Void)?
@@ -46,18 +36,11 @@ public struct MainView: View {
     
     private var header : some View {
         HeaderSectionView(
-            currentKeyboard: $currentKeyboard, 
-            currentInput: $currentTypingInput,
+            currentKeyboard: keyboardInputVM.currentKeyboard, 
+            currentInput: keyboardInputVM.currentTypingInput,
             onSwitchKeyboard: { keyboardType in
-                switch keyboardType {
-                case .sona:
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        currentKeyboard = .text
-                    }
-                default:
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        currentKeyboard = .sona
-                    }
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    keyboardInputVM.switchKeyboard(keyboardType)
                 }
             },
             textReplacements: textReplacementsVM.textReplacements,
@@ -72,21 +55,30 @@ public struct MainView: View {
     
     @ViewBuilder
     private var keyboard: some View {
-        switch currentKeyboard {
+        switch keyboardInputVM.currentKeyboard {
         case .emoji:
             EmojiKeyboardView(
                 onEmojiSelected: { emoji in
-                    handleEmojiSelection(emoji)
+                    keyboardInputVM.handleEmojiSelection(emoji) {
+                        key, inputText in
+                        onTextChanged?(inputText)
+                        onKeyPressed?(key)
+                    }
                 },
                 onBackToKeyboard: {
                     withAnimation(.easeInOut(duration: 0.3)) {
-                        currentKeyboard = .text
+                        keyboardInputVM.currentKeyboard = .text
                     }
                 }
             )
         case .text:
             CustomKeyboardV2View { key, specialKey in
-                handleKeyboardInput(key: key, specialKey: specialKey)
+                keyboardInputVM.handleKeyboardInput(key: key, specialKey: specialKey){
+                    key, inputText in
+                    onTextChanged?(inputText)
+                    onKeyPressed?(key)
+                    
+                }
             }
         case .sona:
             SonaKeyboardView()
@@ -104,135 +96,29 @@ public struct MainView: View {
                     insertion: .move(edge: .bottom).combined(with: .opacity),
                     removal: .move(edge: .bottom).combined(with: .opacity)
                 ))
-                .animation(.easeInOut(duration: 0.3), value: currentKeyboard)
+                .animation(.easeInOut(duration: 0.3), value: keyboardInputVM.currentKeyboard)
         }
 
-    }
-    
-    // MARK: - Emoji Handling
-    private func handleEmojiSelection(_ emoji: String) {
-        if emoji == "⌫" {
-            // Handle delete from emoji keyboard
-            if !inputText.isEmpty {
-                inputText.removeLast()
-                onTextChanged?(inputText)
-                onKeyPressed?("⌫")
-                print("🎯 Deleted character from emoji keyboard -> Current input: '\(inputText)'")
-            }
-        } else {
-            // Add emoji to input
-            inputText += emoji
-            onTextChanged?(inputText)
-            onKeyPressed?(emoji)
-            print("😀 Added emoji: '\(emoji)' -> Current input: '\(inputText)'")
-        }
-    }
-    
-    // MARK: - Keyboard Input Handling
-    private func handleKeyboardInput(key: String, specialKey: KeyboardLayout.SpecialKey?) {
-        lastPressedKey = key
-        
-        if let specialKey = specialKey {
-            handleSpecialKey(key: key, specialKey: specialKey)
-        } else {
-            handleTextKey(key)
-        }
-    }
-    
-    private func handleTextKey(_ key: String) {
-        // Add regular text characters to input
-        inputText += key
-        
-        // Update current typing input for text replacement suggestions
-        updateCurrentTypingInput()
-        
-        onTextChanged?(inputText)
-        onKeyPressed?(key)
-        print("📝 Added text: '\(key)' -> Current input: '\(inputText)'")
-        print("🔍 Current typing input: '\(currentTypingInput)'")
-    }
-    
-    private func updateCurrentTypingInput() {
-        // Get the current word being typed (characters after the last space/punctuation)
-        let separators = CharacterSet.whitespacesAndNewlines.union(.punctuationCharacters)
-        let words = inputText.components(separatedBy: separators)
-        currentTypingInput = words.last ?? ""
-        
-        // Request text replacement suggestions from the keyboard controller
-        if let replacements = onTextReplacementRequested?(currentTypingInput) {
-            textReplacementsVM.textReplacements = replacements
-        }
-    }
-    
-    private func handleSpecialKey(key: String, specialKey: KeyboardLayout.SpecialKey) {
-        onKeyPressed?(key)
-        
-        switch specialKey {
-        case .space:
-            inputText += " "
-            currentTypingInput = "" // Clear typing input on space
-            textReplacementsVM.textReplacements = [] // Clear text replacement suggestions
-            onTextChanged?(inputText)
-            print("🎯 Added space -> Current input: '\(inputText)'")
-            
-        case .delete:
-            if !inputText.isEmpty {
-                inputText.removeLast()
-                updateCurrentTypingInput() // Update typing input after delete
-                onTextChanged?(inputText)
-                print("🎯 Deleted character -> Current input: '\(inputText)'")
-            }
-            
-        case .enter:
-            print("🎯 Enter pressed -> Submit: '\(inputText)'")
-            onTextSubmitted?(inputText)
-            // Handle text submission here
-            // inputText = "" // Optionally clear input
-            
-        case .shift:
-            print("🎯 Shift toggled")
-            // Shift state is handled internally by the keyboard
-            
-        case .numbers, .symbols, .letters:
-            print("🎯 Keyboard mode changed to: \(specialKey)")
-            
-        case .globe:
-            print("🎯 Language/Globe pressed - Switching to Sona keyboard")
-            withAnimation(.easeInOut(duration: 0.3)) {
-                currentKeyboard = .sona
-            }
-            
-        case .dot:
-            inputText += "."
-            onTextChanged?(inputText)
-            print("🎯 Added dot -> Current input: '\(inputText)'")
-            
-        case .emoji:
-            print("🎯 Emoji button pressed")
-            withAnimation(.easeInOut(duration: 0.3)) {
-                currentKeyboard = .emoji
-            }
-        }
     }
 }
 
 #Preview(traits: .sizeThatFitsLayout) {
-    MainView(
-        onTextChanged: { text in
-            print("📱 Text changed: '\(text)'")
-        },
-        onKeyPressed: { key in
-            print("⌨️ Key pressed: '\(key)'")
-        },
-        onTextSubmitted: { text in
-            print("✅ Text submitted: '\(text)'")
-        }
-    )
-    .background(Color.white)
-    .frame(height: 300)
-    .background(.pink)
-    .border(Color.yellow, width: 1)
+    @Previewable @StateObject var keyboardInputVM = KeyboardInputVM()
+    VStack {
+        WText("INPUT TEXT (Length: \(keyboardInputVM.inputText.count)) \n\(keyboardInputVM.inputText)")
+            
+        MainView(
+            onTextChanged: { text in
+            },
+            onKeyPressed: { key in
+            },
+            onTextSubmitted: { text in
+            }
+        ).keyboardFrame()
+    }
+
     .loadCustomFonts()
+    .environmentObject(keyboardInputVM)
 }
 
 #Preview("Text"){
