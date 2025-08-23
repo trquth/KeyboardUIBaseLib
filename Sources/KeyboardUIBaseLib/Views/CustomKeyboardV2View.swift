@@ -15,9 +15,9 @@ struct CustomKeyboardV2View: View {
     @State private var lastShiftTapTime: Date = Date()
     
     // Callback for key presses
-    let onKeyPressed: ((String, KeyboardLayout.SpecialKey?) -> Void)?
+    let onKeyPressed: ((String) -> Void)?
     
-    init(onKeyPressed: ((String, KeyboardLayout.SpecialKey?) -> Void)? = nil) {
+    init(onKeyPressed: ((String) -> Void)? = nil) {
         self.onKeyPressed = onKeyPressed
     }
     
@@ -68,10 +68,10 @@ struct CustomKeyboardV2View: View {
         lastShiftTapTime = currentTime
     }
     
-    private func actionKeyButton(_ key: String) -> some View {
+    private func actionKeyButton(_ key: String,_ title: String? = nil) -> some View {
         let size = KeyboardLayout.getKeySize(for: key, in: 0)
         return TextKeyboardButton(
-            text: key,
+            text: title ?? key,
             width: size.width,
             height: size.height,
             titleFontSize: 16,
@@ -97,7 +97,7 @@ struct CustomKeyboardV2View: View {
         }
         
         // Always call the callback with the actual character
-        onKeyPressed?(actualKey, specialKey)
+        onKeyPressed?(actualKey)
         
         // Handle special key actions
         guard let specialKey = specialKey else { 
@@ -153,7 +153,6 @@ struct CustomKeyboardV2View: View {
 //        print("Creating icon button for key: \(key) with asset: \(asset)")
         let size = KeyboardLayout.getKeySize(for: key, in: 0)
         let iconSize = getIconSize(for: asset)
-        let isShiftKey = key == KeyboardLayout.SpecialKey.shift.rawValue
         
         return IconKeyboardButton(
             assetName: asset.fileName,
@@ -181,42 +180,45 @@ struct CustomKeyboardV2View: View {
     }
     
     private func spaceButton() -> some View {
-        let size = KeyboardLayout.getKeySize(for: "space", in: 3)
+        let size = KeyboardLayout.getKeySize(for: KeyboardLayout.SpecialKey.space.rawValue, in: 3)
         return TextKeyboardButton(
-            text: "space",
+            text: KeyboardLayout.SpecialKey.space.keyDisplay,
             width: size.width,
             height: size.height,
             titleFontSize: 18
         ) {
-            handleKeyPress("space")
+            handleKeyPress(KeyboardLayout.SpecialKey.space.rawValue)
         }
     }
     
     @ViewBuilder
     private func keyButton(for key: String, in row: Int) -> some View {
         if KeyboardLayout.isSpecialKey(key) {
-            switch key {
-            case KeyboardLayout.SpecialKey.space.rawValue:
-                spaceButton()
-            case KeyboardLayout.SpecialKey.shift.rawValue:
-                iconKeyButton(asset: .upperCase, key: key)
-            case KeyboardLayout.SpecialKey.delete.rawValue:
-                iconKeyButton(asset: .delete, key: key)
-            case KeyboardLayout.SpecialKey.numbers.rawValue,
-                KeyboardLayout.SpecialKey.symbols.displayText,
-                KeyboardLayout.SpecialKey.dot.rawValue:
-                actionKeyButton(key)
-            case KeyboardLayout.SpecialKey.globe.rawValue:
-                iconKeyButton(asset: .emoji, key: key)
-            case KeyboardLayout.SpecialKey.emoji.rawValue:
-                iconKeyButton(asset: .emoji, key: key)
-            case KeyboardLayout.SpecialKey.enter.rawValue:
-                iconKeyButton(asset: .enter, key: key)
-            case KeyboardLayout.SpecialKey.letters.rawValue:
-                actionKeyButton(key)
-            default:
+            if let specialKey = KeyboardLayout.getSpecialKey(for: key){
+                switch specialKey {
+                case .space:
+                    spaceButton()
+                case .shift:
+                    iconKeyButton(asset: .upperCase, key: key)
+                case .delete:
+                    iconKeyButton(asset: .delete, key: key)
+                case  .symbols:
+                    actionKeyButton(key, KeyboardLayout.SpecialKey.symbols.keyDisplay)
+                case  .dot:
+                    actionKeyButton(key, KeyboardLayout.SpecialKey.dot.keyDisplay)
+                case .numbers:
+                    actionKeyButton(key,KeyboardLayout.SpecialKey.numbers.keyDisplay)
+                case .globe, .emoji:
+                    iconKeyButton(asset: .emoji, key: key)
+                case .enter:
+                    iconKeyButton(asset: .enter, key: key)
+                case .letters:
+                    actionKeyButton(key)
+                }
+            }else{
                 textKeyButton(key)
             }
+            
         } else {
             textKeyButton(key)
         }
@@ -243,8 +245,14 @@ struct CustomKeyboardV2View: View {
 
 
 #Preview("Custom Keyboard - Letters") {
-    CustomKeyboardV2View()
-        .border(.black, width: 1)
+    @Previewable @State var inputText: String = ""
+    VStack(alignment:.center) {
+        WText("::: INPUT ::: \n\(inputText)")
+        CustomKeyboardV2View {
+            key in inputText += key
+        }.keyboardBorderPreview()
+        
+    }
 }
 
 #Preview("Custom Keyboard - With Callback") {
@@ -252,12 +260,8 @@ struct CustomKeyboardV2View: View {
         Text("Keyboard with Callback")
             .font(.headline)
         
-        CustomKeyboardV2View { key, specialKey in
-            if let specialKey = specialKey {
-                print("🎯 Special key pressed: \(key) -> \(specialKey)")
-            } else {
-                print("📝 Text key pressed: \(key)")
-            }
+        CustomKeyboardV2View { key in
+            print("📝 Text key pressed: \(key)")
         }
     }
     .padding()
@@ -267,13 +271,13 @@ struct CustomKeyboardV2View: View {
     VStack(spacing: 20) {
         Text("Letters Mode")
             .font(.headline)
-        CustomKeyboardV2View { key, specialKey in
+        CustomKeyboardV2View { key in
             print("Key pressed: \(key)")
         }
         
         Text("Numbers Mode")
             .font(.headline)
-        CustomKeyboardV2View { key, specialKey in
+        CustomKeyboardV2View { key in
             print("Key pressed: \(key)")
         }
             .onAppear {
@@ -282,7 +286,7 @@ struct CustomKeyboardV2View: View {
         
         Text("Symbols Mode")
             .font(.headline) 
-        CustomKeyboardV2View { key, specialKey in
+        CustomKeyboardV2View { key in
             print("Key pressed: \(key)")
         }
     }

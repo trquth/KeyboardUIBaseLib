@@ -8,8 +8,12 @@
 import SwiftUI
 
 extension View {
-    func keyboardFrame()-> some View {
+    func keyboardFramePreview()-> some View {
         self.frame(height: KeyboardConfiguration.KEYBOARD_HEIGHT)
             .border(.yellow, width: 1)
+    }
+    
+    func keyboardBorderPreview()-> some View {
+        self.border(.yellow, width: 1)
     }
 }

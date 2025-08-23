@@ -8,7 +8,7 @@
 import Foundation
 
 // MARK: - Keyboard Layout Configuration
-struct KeyboardLayout {
+public struct KeyboardLayout {
     
     // MARK: - Layout Types
     enum LayoutType {
@@ -18,22 +18,39 @@ struct KeyboardLayout {
     }
     
     // MARK: - Special Keys
-    enum SpecialKey: String, CaseIterable {
-        case shift = "⬆️"
-        case delete = "⌫"
-        case numbers = "?123"
-        case symbols = "#+"
+  public  enum SpecialKey: String, CaseIterable {
+        case shift = "SHIFT"
+        case delete = "DELETE"
+        case numbers = "NUMBER"
+        case symbols = "SYMBOL"
         case letters = "ABC"
-        case globe = "🌐"
-        case space = "space"
-        case enter = "enter"
-        case dot = "."
+        case globe = "GLOBE"
+        case space = "SPACE"
+        case enter = "ENTER"
+        case dot = "DOT"
         case emoji = "😀"
         
-        var displayText: String {
+        var keyDisplay: String {
+            switch self {
+            case .space:
+                return "space"
+            case .numbers:
+                return "?123"
+            case .dot:
+                return "."
+            case .symbols:
+                return "#+="
+            default:
+                return rawValue
+            }
+        }
+        
+        var keyValue: String {
             switch self {
             case .space:
                 return " "
+            case .dot:
+                return "."
             case .symbols:
                 return "#+="
             default:
@@ -75,7 +92,7 @@ struct KeyboardLayout {
         ["-", "/", ":", ";", "(", ")", "$", "&", "@", "\""],
         
         // Bottom row
-        [SpecialKey.symbols.displayText, ".", ",", "?", "!", "'", SpecialKey.delete.rawValue],
+        [SpecialKey.symbols.rawValue, SpecialKey.dot.rawValue, ",", "?", "!", "'", SpecialKey.delete.rawValue],
         
         // Action row
         [SpecialKey.letters.rawValue, SpecialKey.emoji.rawValue, SpecialKey.space.rawValue, SpecialKey.enter.rawValue]
@@ -90,10 +107,10 @@ struct KeyboardLayout {
         ["_", "\\", "|", "~", "<", ">", "€", "£", "¥", "·"],
         
         // Bottom row
-        [SpecialKey.numbers.rawValue, ".", ",", "?", "!", "'", SpecialKey.delete.rawValue],
+        [SpecialKey.numbers.rawValue, SpecialKey.dot.rawValue, ",", "?", "!", "'", SpecialKey.delete.rawValue],
         
         // Action row
-        [SpecialKey.letters.rawValue, SpecialKey.globe.rawValue, SpecialKey.space.rawValue, SpecialKey.enter.rawValue]
+        [SpecialKey.letters.rawValue, SpecialKey.emoji.rawValue, SpecialKey.space.rawValue, SpecialKey.enter.rawValue]
     ]
     
     // MARK: - Layout Getter
@@ -110,11 +127,11 @@ struct KeyboardLayout {
     
     // MARK: - Key Properties
     static func isSpecialKey(_ key: String) -> Bool {
-        return SpecialKey.allCases.contains { $0.rawValue == key || $0.displayText == key }
+        return SpecialKey.allCases.contains { $0.rawValue == key || $0.keyDisplay == key }
     }
     
     static func getSpecialKey(for string: String) -> SpecialKey? {
-        return SpecialKey.allCases.first { $0.rawValue == string || $0.displayText == string }
+        return SpecialKey.allCases.first { $0.rawValue == string || $0.keyDisplay == string }
     }
     
     static func isActionKey(_ key: String) -> Bool {

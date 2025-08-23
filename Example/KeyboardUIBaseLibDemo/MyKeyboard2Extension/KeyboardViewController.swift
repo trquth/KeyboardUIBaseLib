@@ -37,23 +37,14 @@ class KeyboardViewController: UIInputViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        // // Load UILexicon first
-        // loadSupplementaryLexicon()
-        
+
         let mainView = MainView(
-            onTextChanged: { [weak self] text in
-                //self?.handleTextChanged(text)
-            },
             onKeyPressed: { [weak self] key in
                 self?.handleKeyPressed(key)
                 self?.updateCurrentTypingInput()
             },
             onTextSubmitted: { [weak self] text in
                 self?.handleTextSubmitted(text)
-            },
-            onTextReplacementRequested: { [weak self] input in
-                return self?.getTextReplacements(for: input) ?? []
             },
             onTextReplacementSelected: { [weak self] replacement in
                 self?.handleTextReplacementSelected(replacement)
@@ -334,20 +325,16 @@ class KeyboardViewController: UIInputViewController {
     }
     
     private func getCurrentWord() -> String? {
-        do {
-            guard let contextBefore = getCurrentContext(),
-                  !contextBefore.isEmpty else { return nil }
-            
-            print("🔤 KeyboardViewController :: Current context before input: '\(contextBefore)'")
-            
-            // Find the last word (sequence of letters/numbers without spaces or punctuation)
-            let words = contextBefore.components(
-                separatedBy: CharacterSet.whitespacesAndNewlines.union(.punctuationCharacters)
-            )
-            return words.last?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false ? words.last : nil
-        } catch {
-            return nil
-        }
+        guard let contextBefore = getCurrentContext(),
+              !contextBefore.isEmpty else { return nil }
+        
+        print("🔤 KeyboardViewController :: Current context before input: '\(contextBefore)'")
+        
+        // Find the last word (sequence of letters/numbers without spaces or punctuation)
+        let words = contextBefore.components(
+            separatedBy: CharacterSet.whitespacesAndNewlines.union(.punctuationCharacters)
+        )
+        return words.last?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false ? words.last : nil
     }
     
     // MARK: - Supplementary Lexicon Management
@@ -375,18 +362,6 @@ class KeyboardViewController: UIInputViewController {
             //print("🔄 Text replacement: '\(entry.userInput)' -> '\(entry.documentText)'")
         }
         textReplacementsVM.textReplacements = textReplacements
-    }
-    
-    private func getTextReplacements(for input: String) -> [TextReplacement] {
-        if input.isEmpty {
-            return Array(textReplacementsVM.textReplacements.prefix(5)) // Show up to 5 suggestions
-        }
-        
-        let filtered = textReplacementsVM.textReplacements.filter { replacement in
-            replacement.shortcut.lowercased().hasPrefix(input.lowercased())
-        }
-        
-        return Array(filtered.prefix(5)) // Show up to 5 matching suggestions
     }
     
     private func handleTextReplacementSelected(_ replacement: TextReplacement) {

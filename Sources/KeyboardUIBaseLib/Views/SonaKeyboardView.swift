@@ -142,5 +142,5 @@ struct SonaKeyboardView: View {
 
 #Preview {
     SonaKeyboardView()
-        .keyboardFrame()
+        .keyboardFramePreview()
 }

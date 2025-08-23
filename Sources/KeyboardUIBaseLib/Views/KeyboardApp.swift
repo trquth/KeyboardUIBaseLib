@@ -9,23 +9,17 @@ import SwiftUI
 
 struct KeyboardApp: View {
     // Callback functions
-    private let onTextChanged: ((String) -> Void)?
-    private let onKeyPressed: ((String) -> Void)?
+    private let onKeyPressed: ((KeyItem) -> Void)?
     private let onTextSubmitted: ((String) -> Void)?
-    private let onTextReplacementRequested: ((String) -> [TextReplacement])?
     private let onTextReplacementSelected: ((TextReplacement) -> Void)?
     
     public init(
-        onTextChanged: ((String) -> Void)? = nil,
-        onKeyPressed: ((String) -> Void)? = nil,
+        onKeyPressed: ((KeyItem) -> Void)? = nil,
         onTextSubmitted: ((String) -> Void)? = nil,
-        onTextReplacementRequested: ((String) -> [TextReplacement])? = nil,
         onTextReplacementSelected: ((TextReplacement) -> Void)? = nil
     ) {
-        self.onTextChanged = onTextChanged
         self.onKeyPressed = onKeyPressed
         self.onTextSubmitted = onTextSubmitted
-        self.onTextReplacementRequested = onTextReplacementRequested
         self.onTextReplacementSelected = onTextReplacementSelected
     }
     
@@ -34,8 +28,6 @@ struct KeyboardApp: View {
         MainView(
             onKeyPressed: self.onKeyPressed,
             onTextSubmitted: self.onTextSubmitted,
-            onTextReplacementRequested:
-                self.onTextReplacementRequested,
             onTextReplacementSelected:
                 self.onTextReplacementSelected)
     }
@@ -43,15 +35,13 @@ struct KeyboardApp: View {
 
 #Preview {
     VStack {  
-        KeyboardApp(  onTextChanged: { text in
-            print("📱 KeyboardApp Text changed: '\(text)'")
-        },
+        KeyboardApp(
                       onKeyPressed: { key in
             print("⌨️ KeyboardApp Key pressed: '\(key)'")
         },
                       onTextSubmitted: { text in
             print("✅ KeyboardApp Text submitted: '\(text)'")
-        }).keyboardFrame()
+                      }).keyboardFramePreview()
     }
     
 }

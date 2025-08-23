@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-typealias TextChangeCallback = (_ key: String,_ inputText: String) -> Void
+typealias TextChangeCallback = (KeyItem) -> Void
 
 public class KeyboardInputVM: ObservableObject {
     @Published public var inputText: String = ""
@@ -58,13 +58,17 @@ public class KeyboardInputVM: ObservableObject {
     }
     
     // MARK: - Keyboard Input Handling
-    func handleKeyboardInput(key: String, specialKey: KeyboardLayout.SpecialKey?, callback: TextChangeCallback?) {
-        print("🔑 KeyboardInputVM handleKeyboardInput :: Key pressed: '\(key)' with special key: \(String(describing: specialKey))")
-        lastPressedKey = key
+    func handleKeyboardInput(_ key: String, callback: TextChangeCallback?) {
+        print("🔑 KeyboardInputVM handleKeyboardInput :: Key pressed: '\(key)' with special key: \(String(describing: KeyboardLayout.getSpecialKey(for: key) ?? .none))")
+       
         
-        if let specialKey = specialKey {
+        lastPressedKey = key
+        if KeyboardLayout.isSpecialKey(key) {
+            guard let specialKey = KeyboardLayout.getSpecialKey(for: key) else{
+                return
+            }
             handleSpecialKey(key, specialKey, callback)
-        } else {
+        }else{
             handleTextKey(key,callback)
         }
     }
@@ -75,7 +79,7 @@ public class KeyboardInputVM: ObservableObject {
         
         //        // Update current typing input for text replacement suggestions
         //        updateCurrentTypingInput()
-        callback?(key, inputText)
+        callback?(KeyItem(value: key, key: nil))
         
         //        onTextChanged?(inputText)
         //        onKeyPressed?(key)
@@ -87,20 +91,20 @@ public class KeyboardInputVM: ObservableObject {
         
         switch specialKey {
         case .space:
-            inputText += " "
-            callback?(key, inputText)
+            inputText += specialKey.keyValue
+            callback?(KeyItem(value: specialKey.keyValue, key: specialKey))
             print("🎯 Added space -> Current input: '\(inputText)'")
             
         case .delete:
             if !inputText.isEmpty {
                 inputText.removeLast()
-                callback?(key, inputText)
+                callback?(KeyItem(value: specialKey.keyValue, key: specialKey))
                 print("🎯 Deleted character -> Current input: '\(inputText)'")
             }
             
         case .enter:
             print("🎯 Enter pressed -> Submit: '\(inputText)'")
-            callback?(key, inputText)
+            callback?(KeyItem(value: specialKey.keyValue, key: specialKey))
         case .shift:
             print("🎯 Shift toggled")
             // Shift state is handled internally by the keyboard
@@ -115,8 +119,8 @@ public class KeyboardInputVM: ObservableObject {
             }
             
         case .dot:
-            inputText += "."
-            callback?(key, inputText)
+            inputText += specialKey.keyValue
+            callback?(KeyItem(value: specialKey.keyValue, key: specialKey))
             print("🎯 Added dot -> Current input: '\(inputText)'")
             
         case .emoji:
@@ -130,17 +134,17 @@ public class KeyboardInputVM: ObservableObject {
     
     // MARK: - Emoji Handling
     func handleEmojiSelection(_ emoji: String, callback: TextChangeCallback? = nil) {
-        if emoji == "⌫" {
+        if emoji == KeyboardLayout.SpecialKey.delete.rawValue {
             // Handle delete from emoji keyboard
             if !inputText.isEmpty {
                 inputText.removeLast()
-                callback?(emoji, inputText)
+                callback?(KeyItem(value: emoji, key: nil))
                 print("🎯 Deleted character from emoji keyboard -> Current input: '\(inputText)'")
             }
         } else {
             // Add emoji to input
             inputText += emoji
-            callback?(emoji, inputText)
+            callback?(KeyItem(value: emoji, key: nil))
             print("😀 Added emoji: '\(emoji)' -> Current input: '\(inputText)'")
         }
     }
@@ -148,6 +152,6 @@ public class KeyboardInputVM: ObservableObject {
     // MARK: - Text Replacement Handling
     func onSelectTextReplacement(with replacement: String, callback: TextChangeCallback? = nil) {
         inputText += replacement
-        callback?("", inputText)
+        callback?(KeyItem(value: KeyboardLayout.SpecialKey.space.rawValue, key: KeyboardLayout.SpecialKey.space))
     }
 }

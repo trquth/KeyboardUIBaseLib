@@ -11,26 +11,20 @@ public struct MainView: View {
     @EnvironmentObject private var keyboardInputVM: KeyboardInputVM
     
     // Callback functions
-    private let onTextChanged: ((String) -> Void)?
-    private let onKeyPressed: ((String) -> Void)?
+    private let onKeyPressed: ((KeyItem) -> Void)?
     private let onTextSubmitted: ((String) -> Void)?
-    private let onTextReplacementRequested: ((String) -> [TextReplacement])?
     private let onTextReplacementSelected: ((TextReplacement) -> Void)?
     
     // Text replacement view model
     @StateObject private var textReplacementsVM = TextReplacementVM()
     
     public init(
-        onTextChanged: ((String) -> Void)? = nil,
-        onKeyPressed: ((String) -> Void)? = nil,
+        onKeyPressed: ((KeyItem) -> Void)? = nil,
         onTextSubmitted: ((String) -> Void)? = nil,
-        onTextReplacementRequested: ((String) -> [TextReplacement])? = nil,
         onTextReplacementSelected: ((TextReplacement) -> Void)? = nil
     ) {
-        self.onTextChanged = onTextChanged
         self.onKeyPressed = onKeyPressed
         self.onTextSubmitted = onTextSubmitted
-        self.onTextReplacementRequested = onTextReplacementRequested
         self.onTextReplacementSelected = onTextReplacementSelected
     }
     
@@ -38,7 +32,7 @@ public struct MainView: View {
         HeaderSectionView(
             onTextReplacementSelected: { replacement in
                 onTextReplacementSelected?(replacement)
-                onKeyPressed?(KeyboardLayout.SpecialKey.space.rawValue)
+                onKeyPressed?(KeyItem(value: KeyboardLayout.SpecialKey.space.rawValue, key: KeyboardLayout.SpecialKey.space))
             }
         )
     }
@@ -50,9 +44,8 @@ public struct MainView: View {
             EmojiKeyboardView(
                 onEmojiSelected: { emoji in
                     keyboardInputVM.handleEmojiSelection(emoji) {
-                        key, inputText in
-                        onTextChanged?(inputText)
-                        onKeyPressed?(key)
+                       keyItem in
+                        onKeyPressed?(keyItem)
                     }
                 },
                 onBackToKeyboard: {
@@ -62,12 +55,11 @@ public struct MainView: View {
                 }
             )
         case .text:
-            CustomKeyboardV2View { key, specialKey in
-                keyboardInputVM.handleKeyboardInput(key: key, specialKey: specialKey){
-                    key, inputText in
-                    print("Input Text Updated: \(inputText) :: key = \(key)")
-                    onTextChanged?(inputText)
-                    onKeyPressed?(key)  
+            CustomKeyboardV2View { key in
+                keyboardInputVM.handleKeyboardInput(key){
+                    keyItem in
+                    print("Input Text Updated key item :: key = \(keyItem.value)")
+                    onKeyPressed?(keyItem)
                 }
             }
         case .sona:
@@ -95,7 +87,9 @@ public struct MainView: View {
 #Preview(traits: .sizeThatFitsLayout) {
     @Previewable @StateObject var keyboardInputVM = KeyboardInputVM()
     
+    
     let sampleReplacements = [
+        TextReplacement(shortcut: "clgt", replacement: "Cau lam gi the"),
         TextReplacement(shortcut: "omw", replacement: "On my way!"),
         TextReplacement(shortcut: "brb", replacement: "Be right back"),
         TextReplacement(shortcut: "lol", replacement: "😂"),
@@ -106,13 +100,17 @@ public struct MainView: View {
         WText("INPUT TEXT (Length: \(keyboardInputVM.inputText.count)) \n\(keyboardInputVM.inputText)")
             
         MainView(
-            onTextChanged: { text in
-            },
             onKeyPressed: { key in
+                keyboardInputVM.currentTypingInput = key.value
             },
             onTextSubmitted: { text in
+            },
+            onTextReplacementSelected: { replacement in
+                print("📋 Text Replacement Selected: '\(replacement.shortcut)' -> '\(replacement.replacement)'")
+                keyboardInputVM.inputText = replacement.replacement
+                keyboardInputVM.resetCurrentTypingInput()
             }
-        ).keyboardFrame()
+        ).keyboardFramePreview()
     }
     .loadCustomFonts()
     .environmentObject(keyboardInputVM)

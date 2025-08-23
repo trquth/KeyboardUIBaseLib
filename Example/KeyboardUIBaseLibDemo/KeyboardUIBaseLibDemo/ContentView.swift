@@ -14,9 +14,6 @@ struct ContentView: View {
             Spacer()
                 
             MainView(
-                onTextChanged: { text in
-                    print("📱 Text changed: '\(text)'")
-                },
                 onKeyPressed: { key in
                     print("⌨️ Key pressed: '\(key)'")
                 },

@@ -82,7 +82,7 @@ struct EmojiKeyboardView: View {
     private func deleteButton() -> some View {
         WIconButton("delete_ico") {
             // Simulate delete key press - this would need to be handled by the parent
-            onEmojiSelected?("⌫") // Using backspace character
+            onEmojiSelected?(KeyboardLayout.SpecialKey.delete.rawValue) // Using backspace character
         }
         .buttonStyle(.minimal)
         .buttonSize(width: 40, height: 36)
