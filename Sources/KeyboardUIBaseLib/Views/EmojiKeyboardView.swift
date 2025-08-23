@@ -131,7 +131,7 @@ struct EmojiKeyboardView: View {
     }
     
     private var displayedRecentEmojis: [String] {
-        return recentEmojis.isEmpty ? ["🎉", "👋", "😊", "❤️", "👍", "😂", "🔥", "💯"] : recentEmojis
+        return recentEmojis.isEmpty ? [] : recentEmojis
     }
     
     private func emojiButton(_ emoji: String) -> some View {

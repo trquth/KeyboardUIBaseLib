@@ -19,9 +19,22 @@ public class KeyboardInputVM: ObservableObject {
     public init() {
     }
     
-    func clearInputText() {
-        inputText = ""
+    public init(inputText: String) {
+        self.inputText = inputText
     }
+    
+    func clearInputText() {
+        if !inputText.isEmpty {
+            inputText = ""
+        }
+    }
+    
+    public func resetCurrentTypingInput() {
+        if !currentTypingInput.isEmpty {
+          currentTypingInput = ""
+        }
+    }
+    
     
     func switchKeyboard(_ currentKeyboard: KeyboardType) {
         switch currentKeyboard {
@@ -46,11 +59,11 @@ public class KeyboardInputVM: ObservableObject {
     
     // MARK: - Keyboard Input Handling
     func handleKeyboardInput(key: String, specialKey: KeyboardLayout.SpecialKey?, callback: TextChangeCallback?) {
-        print("🔑 Key pressed: '\(key)' with special key: \(String(describing: specialKey))")
+        print("🔑 KeyboardInputVM handleKeyboardInput :: Key pressed: '\(key)' with special key: \(String(describing: specialKey))")
         lastPressedKey = key
         
         if let specialKey = specialKey {
-            handleSpecialKey(key: key, specialKey: specialKey)
+            handleSpecialKey(key, specialKey, callback)
         } else {
             handleTextKey(key,callback)
         }
@@ -70,7 +83,7 @@ public class KeyboardInputVM: ObservableObject {
         //  print("🔍 Current typing input: '\(currentTypingInput)'")
     }
     
-    private func handleSpecialKey(key: String, specialKey: KeyboardLayout.SpecialKey, callback: TextChangeCallback? = nil) {
+    private func handleSpecialKey(_ key: String,_ specialKey: KeyboardLayout.SpecialKey,_ callback: TextChangeCallback? = nil) {
         
         switch specialKey {
         case .space:
@@ -130,5 +143,11 @@ public class KeyboardInputVM: ObservableObject {
             callback?(emoji, inputText)
             print("😀 Added emoji: '\(emoji)' -> Current input: '\(inputText)'")
         }
+    }
+    
+    // MARK: - Text Replacement Handling
+    func onSelectTextReplacement(with replacement: String, callback: TextChangeCallback? = nil) {
+        inputText += replacement
+        callback?("", inputText)
     }
 }

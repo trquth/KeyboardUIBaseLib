@@ -36,19 +36,9 @@ public struct MainView: View {
     
     private var header : some View {
         HeaderSectionView(
-            currentKeyboard: keyboardInputVM.currentKeyboard, 
-            currentInput: keyboardInputVM.currentTypingInput,
-            onSwitchKeyboard: { keyboardType in
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    keyboardInputVM.switchKeyboard(keyboardType)
-                }
-            },
-            textReplacements: textReplacementsVM.textReplacements,
             onTextReplacementSelected: { replacement in
                 onTextReplacementSelected?(replacement)
-            },
-            onClearTextReplacements: {
-                textReplacementsVM.textReplacements = []
+                onKeyPressed?(KeyboardLayout.SpecialKey.space.rawValue)
             }
         )
     }
@@ -75,9 +65,9 @@ public struct MainView: View {
             CustomKeyboardV2View { key, specialKey in
                 keyboardInputVM.handleKeyboardInput(key: key, specialKey: specialKey){
                     key, inputText in
+                    print("Input Text Updated: \(inputText) :: key = \(key)")
                     onTextChanged?(inputText)
-                    onKeyPressed?(key)
-                    
+                    onKeyPressed?(key)  
                 }
             }
         case .sona:
@@ -104,6 +94,14 @@ public struct MainView: View {
 
 #Preview(traits: .sizeThatFitsLayout) {
     @Previewable @StateObject var keyboardInputVM = KeyboardInputVM()
+    
+    let sampleReplacements = [
+        TextReplacement(shortcut: "omw", replacement: "On my way!"),
+        TextReplacement(shortcut: "brb", replacement: "Be right back"),
+        TextReplacement(shortcut: "lol", replacement: "😂"),
+        TextReplacement(shortcut: "addr", replacement: "123 Main Street, City, State 12345")
+    ]
+    
     VStack {
         WText("INPUT TEXT (Length: \(keyboardInputVM.inputText.count)) \n\(keyboardInputVM.inputText)")
             
@@ -116,9 +114,9 @@ public struct MainView: View {
             }
         ).keyboardFrame()
     }
-
     .loadCustomFonts()
     .environmentObject(keyboardInputVM)
+    .environmentObject(TextReplacementVM(textReplacements: sampleReplacements))
 }
 
 #Preview("Text"){

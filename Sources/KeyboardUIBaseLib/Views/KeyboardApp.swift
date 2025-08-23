@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct KeyboardApp: View {
-    private var keyboardInputVM = KeyboardInputVM()
-    
     // Callback functions
     private let onTextChanged: ((String) -> Void)?
     private let onKeyPressed: ((String) -> Void)?
@@ -33,28 +31,28 @@ struct KeyboardApp: View {
     
     
     var body: some View {
-        MainView( onKeyPressed: self.onKeyPressed,
-        onTextSubmitted: self.onTextSubmitted,
-        onTextReplacementRequested: self.onTextReplacementRequested,
-                  onTextReplacementSelected: self.onTextReplacementSelected).environmentObject(keyboardInputVM)
+        MainView(
+            onKeyPressed: self.onKeyPressed,
+            onTextSubmitted: self.onTextSubmitted,
+            onTextReplacementRequested:
+                self.onTextReplacementRequested,
+            onTextReplacementSelected:
+                self.onTextReplacementSelected)
     }
 }
 
 #Preview {
-    @Previewable @StateObject var keyboardInputVM = KeyboardInputVM()
-    VStack {
-        WText("INPUT TEXT (Length: \(keyboardInputVM.inputText.count)) \n\(keyboardInputVM.inputText)")
-            
+    VStack {  
         KeyboardApp(  onTextChanged: { text in
             print("📱 KeyboardApp Text changed: '\(text)'")
         },
-        onKeyPressed: { key in
+                      onKeyPressed: { key in
             print("⌨️ KeyboardApp Key pressed: '\(key)'")
         },
-        onTextSubmitted: { text in
+                      onTextSubmitted: { text in
             print("✅ KeyboardApp Text submitted: '\(text)'")
-        }).keyboardFrame().environmentObject( keyboardInputVM)
+        }).keyboardFrame()
     }
-  
+    
 }
 

@@ -20,12 +20,12 @@ class KeyboardViewController: UIInputViewController {
     private var isCapsLockOn: Bool = false
     
     // UILexicon and text replacement
-    private var supplementaryLexicon: UILexicon?
     private var currentTypingInput: String = ""
     
     // Text Replacement View Model
+    let keyboardInputVM = KeyboardInputVM()
     let textReplacementsVM = TextReplacementVM()
-
+    
     override func updateViewConstraints() {
         super.updateViewConstraints()
         
@@ -41,15 +41,13 @@ class KeyboardViewController: UIInputViewController {
         // // Load UILexicon first
         // loadSupplementaryLexicon()
         
-        // Load supplementary lexicon for text replacements
-        loadSupplementaryLexicon()
-        
         let mainView = MainView(
             onTextChanged: { [weak self] text in
-                self?.handleTextChanged(text)
+                //self?.handleTextChanged(text)
             },
             onKeyPressed: { [weak self] key in
                 self?.handleKeyPressed(key)
+                self?.updateCurrentTypingInput()
             },
             onTextSubmitted: { [weak self] text in
                 self?.handleTextSubmitted(text)
@@ -58,9 +56,10 @@ class KeyboardViewController: UIInputViewController {
                 return self?.getTextReplacements(for: input) ?? []
             },
             onTextReplacementSelected: { [weak self] replacement in
-                self?.applyTextReplacement(replacement)
+                self?.handleTextReplacementSelected(replacement)
             }
-        )
+        ).environmentObject(keyboardInputVM)
+            .environmentObject(textReplacementsVM)
         
         let hosting = UIHostingController(rootView:mainView)
         addChild(hosting)
@@ -74,10 +73,10 @@ class KeyboardViewController: UIInputViewController {
             hosting.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
         
-//        heightConstraint = view.heightAnchor.constraint(equalToConstant: 280)
-//        heightConstraint?.priority = .defaultHigh
-//        heightConstraint?.isActive = true
-//        
+        //        heightConstraint = view.heightAnchor.constraint(equalToConstant: 280)
+        //        heightConstraint?.priority = .defaultHigh
+        //        heightConstraint?.isActive = true
+        //
         hosting.didMove(toParent: self)
     }
     
@@ -138,59 +137,33 @@ class KeyboardViewController: UIInputViewController {
     override func textDidChange(_ textInput: UITextInput?) {
         print("🔄 KeyboardViewController: Document context changed")
         
-        let inputText = textDocumentProxy.documentContextBeforeInput ?? ""
+        let inputText = getCurrentContext() ?? ""
         if inputText.isEmpty {
             //Reset current typing input if there's no text
             currentTypingInput = ""
             return;
         }
         
-            
-        let textInputChars = textDocumentProxy.documentContextBeforeInput ?? ""
-        print("Text before input: \(textDocumentProxy.documentContextBeforeInput ?? "")")
+        
+        let textInputChars = getCurrentContext() ?? ""
+        print("Text before input: \(getCurrentContext() ?? "")")
         print("Text after input: \(textDocumentProxy.documentContextAfterInput ?? "")")
         print("Current input: \(textDocumentProxy.documentIdentifier.uuidString)")
-    }
-    
-    
-    private func processLexiconEntries() {
-        guard let lexicon = supplementaryLexicon else { return }
-        
-        textReplacementsVM.textReplacements = lexicon.entries.map { entry in
-            TextReplacement(shortcut: entry.userInput, replacement: entry.documentText)
-        }
-    }
-    
-    private func handleTextReplacementSelected(_ replacement: TextReplacement) {
-        print("🔄 Text replacement selected: \(replacement.shortcut) → \(replacement.replacement)")
-        
-        // Delete the current input (shortcut)
-        if !currentTypingInput.isEmpty {
-            for _ in currentTypingInput {
-                textDocumentProxy.deleteBackward()
-            }
-        }
-        
-        // Insert the replacement text
-        textDocumentProxy.insertText(replacement.replacement)
-        
-        // Clear current input
-        currentTypingInput = ""
     }
     
     // MARK: - Keyboard Handling Methods
     
     private func handleTextChanged(_ text: String) {
-        print("📝 KeyboardViewController: Text changed to: '\(text)'")
+        //print("📝 KeyboardViewController: Text changed to: '\(text)'")
         
         // Update current typing input for text replacement suggestions
-        currentTypingInput = getCurrentWord() ?? ""
-        print("🔤 Current typing input: '\(currentTypingInput)'")
+        //currentTypingInput = getCurrentWord() ?? ""
+        //print("🔤 KeyboardViewController Current typing input: '\(currentTypingInput)'")
     }
     
     private func handleKeyPressed(_ key: String) {
         // Handle different types of key presses
-        print("⌨️ KeyboardViewController: Key pressed: '\(key)' (length: \(key.count))")
+        print("⌨️ KeyboardViewController ::: handleKeyPressed :: Key pressed: '\(key)'")
         
         switch key {
         case "delete", "backspace", "⌫":  // Handle both text and symbol for delete
@@ -245,7 +218,7 @@ class KeyboardViewController: UIInputViewController {
     
     private func handleReturnKey() {
         // Get the current text context before inserting newline
-        let currentText = textDocumentProxy.documentContextBeforeInput ?? ""
+        let currentText = getCurrentContext() ?? ""
         print("Current text before return: '\(currentText)'")
         
         // Check the return key type to determine behavior
@@ -286,7 +259,7 @@ class KeyboardViewController: UIInputViewController {
     }
     
     private func handleSpaceKey() {
-        textDocumentProxy.insertText(" ")
+        insertText(" ")
     }
     
     private func handleShiftKey() {
@@ -324,7 +297,7 @@ class KeyboardViewController: UIInputViewController {
         // This is the proper way to request dismissal in iOS
         dismissKeyboard()
         
-        // Method 2: For certain return key types (.send, .search, .done), 
+        // Method 2: For certain return key types (.send, .search, .done),
         // the system and host app may automatically dismiss the keyboard
         
         // Method 3: Advance to next input mode can sometimes trigger dismissal
@@ -361,12 +334,20 @@ class KeyboardViewController: UIInputViewController {
     }
     
     private func getCurrentWord() -> String? {
-        guard let contextBefore = textDocumentProxy.documentContextBeforeInput,
-              !contextBefore.isEmpty else { return nil }
-        
-        // Find the last word (sequence of letters/numbers without spaces or punctuation)
-        let words = contextBefore.components(separatedBy: CharacterSet.whitespacesAndNewlines.union(.punctuationCharacters))
-        return words.last?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false ? words.last : nil
+        do {
+            guard let contextBefore = getCurrentContext(),
+                  !contextBefore.isEmpty else { return nil }
+            
+            print("🔤 KeyboardViewController :: Current context before input: '\(contextBefore)'")
+            
+            // Find the last word (sequence of letters/numbers without spaces or punctuation)
+            let words = contextBefore.components(
+                separatedBy: CharacterSet.whitespacesAndNewlines.union(.punctuationCharacters)
+            )
+            return words.last?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false ? words.last : nil
+        } catch {
+            return nil
+        }
     }
     
     // MARK: - Supplementary Lexicon Management
@@ -374,25 +355,26 @@ class KeyboardViewController: UIInputViewController {
     private func loadSupplementaryLexicon() {
         requestSupplementaryLexicon { [weak self] lexicon in
             DispatchQueue.main.async {
-                self?.supplementaryLexicon = lexicon
-                self?.processSupplementaryLexicon()
+                self?.processSupplementaryLexicon(lexicon)
                 print("📚 Loaded supplementary lexicon with \(lexicon.entries.count) entries")
             }
         }
     }
     
-    private func processSupplementaryLexicon() {
-        guard let lexicon = supplementaryLexicon else { return }
+    private func processSupplementaryLexicon(_ lexicon : UILexicon? = nil) {
+        guard let lexicon = lexicon else { return }
         
         // Clear existing replacements
         textReplacementsVM.textReplacements.removeAll()
         
+        var textReplacements = [TextReplacement]()
         // Process lexicon entries
-        for entry in lexicon.entries.filter({ !$0.userInput.isEmpty}) {
-                
-            textReplacementsVM.textReplacements.append(TextReplacement(shortcut: entry.userInput, replacement: entry.documentText))
+        for entry in lexicon.entries {
+            textReplacements.append(TextReplacement(shortcut: entry.userInput, replacement: entry.documentText))
+            
             //print("🔄 Text replacement: '\(entry.userInput)' -> '\(entry.documentText)'")
         }
+        textReplacementsVM.textReplacements = textReplacements
     }
     
     private func getTextReplacements(for input: String) -> [TextReplacement] {
@@ -407,22 +389,27 @@ class KeyboardViewController: UIInputViewController {
         return Array(filtered.prefix(5)) // Show up to 5 matching suggestions
     }
     
-    private func applyTextReplacement(_ replacement: TextReplacement) {
+    private func handleTextReplacementSelected(_ replacement: TextReplacement) {
+        print("🔄 Text replacement selected: \(replacement.shortcut) → \(replacement.replacement)")
         // Get current context to find the shortcut to replace
-        guard let contextBefore = textDocumentProxy.documentContextBeforeInput else { return }
-        
-        // Find and delete the shortcut text
-        let words = contextBefore.components(separatedBy: CharacterSet.whitespacesAndNewlines.union(.punctuationCharacters))
-        if let lastWord = words.last, !lastWord.isEmpty {
-            // Delete the shortcut characters
+        if let lastWord = getCurrentWord() {
+            print("🔤 Applying text replacement for current word: '\(lastWord)'")
             for _ in lastWord {
-                textDocumentProxy.deleteBackward()
+                handleDeleteKey()
             }
         }
-        
         // Insert the replacement text
-        textDocumentProxy.insertText(replacement.replacement)
+        insertText(replacement.replacement)
         
         print("✅ Applied text replacement: '\(replacement.shortcut)' -> '\(replacement.replacement)'")
+    }
+    
+    private func updateCurrentTypingInput() {
+        if let lastWord = getCurrentWord() {
+            keyboardInputVM.currentTypingInput = lastWord
+            print("Last word : \(lastWord)")  // Update current typing input
+        }else {
+            keyboardInputVM.resetCurrentTypingInput()
+        }
     }
 }

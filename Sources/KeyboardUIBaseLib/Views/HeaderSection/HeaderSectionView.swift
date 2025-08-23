@@ -8,47 +8,21 @@
 import SwiftUI
 
 struct HeaderSectionView: View {
-    private var currentKeyboard: KeyboardType
-    private var currentInput: String
-
-    // Callback for switching back to text keyboard
-    let onSwitchKeyboard: ((KeyboardType) -> Void)?
+    @EnvironmentObject private var keyboardInputVM: KeyboardInputVM
+    @EnvironmentObject private var textReplacementVM: TextReplacementVM
     
     // Text replacement suggestions
-    let textReplacements: [TextReplacement]
     let onTextReplacementSelected: ((TextReplacement) -> Void)?
-    let onClearTextReplacements: (() -> Void)?
     
     init(
-        currentKeyboard: KeyboardType,
-        currentInput: String,
-        onSwitchKeyboard: ((KeyboardType) -> Void)? = nil,
-        textReplacements: [TextReplacement] = [],
-        onTextReplacementSelected: ((TextReplacement) -> Void)? = nil,
-        onClearTextReplacements: (() -> Void)? = nil
+        onTextReplacementSelected: ((TextReplacement) -> Void)? = nil
     ) {
-        self.currentKeyboard = currentKeyboard
-        self.currentInput = currentInput
-        self.onSwitchKeyboard = onSwitchKeyboard
-        self.textReplacements = textReplacements
         self.onTextReplacementSelected = onTextReplacementSelected
-        self.onClearTextReplacements = onClearTextReplacements
     }
-    
-    
     
     // Filter suggestions based on current input
     private var filteredSuggestions: [TextReplacement] {
-        //print("Filtering suggestions for input: \(currentInput)")
-        if currentInput.isEmpty {
-            return []
-        }
-        
-        let filtered = textReplacements.filter { replacement in
-            replacement.shortcut.lowercased().hasPrefix(currentInput.lowercased())
-        }
-        
-        return Array(filtered.prefix(5)) // Show up to 5 matching suggestions
+        textReplacementVM.findTextReplacements(for:keyboardInputVM.currentTypingInput)
     }
     
     private var filteredSuggestionsCount: Int {
@@ -62,7 +36,6 @@ struct HeaderSectionView: View {
                     ForEach(Array(filteredSuggestions.enumerated()), id: \.element.id) { index, suggestion in
                         Button{
                             onTextReplacementSelected?(suggestion)
-                            onClearTextReplacements?() // Clear suggestions after selection
                         }label: {
                             WText(suggestion.replacement)
                                 .fontSize(17)
@@ -79,15 +52,8 @@ struct HeaderSectionView: View {
                     }
                 }
             }   
-            Spacer()
-            
-            Circle()
-                .fill(Color.black)
-                .frame(width: 42, height: 42)
-                .onTapGesture {
-                    print("Switching to text keyboard \(currentKeyboard)")
-                    onSwitchKeyboard?(currentKeyboard)
-                }
+            WSpacer()
+            SwitchKeyboardButton()
         }
         .padding(.horizontal, 16)
     }
@@ -102,11 +68,10 @@ struct HeaderSectionView: View {
     ]
     
     HeaderSectionView(
-        currentKeyboard: .text,
-        currentInput: "o", onSwitchKeyboard: nil,
-        textReplacements: sampleReplacements,
         onTextReplacementSelected: { replacement in
             print("Selected: \(replacement.shortcut) -> \(replacement.replacement)")
         }
-    )
+    ).environmentObject(KeyboardInputVM(inputText: "lol"))
+        .environmentObject(TextReplacementVM(textReplacements: sampleReplacements))
+        
 }
