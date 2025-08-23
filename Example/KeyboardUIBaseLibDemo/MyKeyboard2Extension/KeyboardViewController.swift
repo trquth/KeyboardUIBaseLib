@@ -15,13 +15,6 @@ class KeyboardViewController: UIInputViewController {
     
     var heightConstraint: NSLayoutConstraint?
     
-    // Keep track of keyboard state
-    private var isShiftPressed: Bool = false
-    private var isCapsLockOn: Bool = false
-    
-    // UILexicon and text replacement
-    private var currentTypingInput: String = ""
-    
     // Text Replacement View Model
     let keyboardInputVM = KeyboardInputVM()
     let textReplacementsVM = TextReplacementVM()
@@ -124,63 +117,36 @@ class KeyboardViewController: UIInputViewController {
         // The app is about to change the document's contents. Perform any preparation here.
     }
     
-    //When text input changes, this func will call with the updated text input.
     override func textDidChange(_ textInput: UITextInput?) {
-        print("🔄 KeyboardViewController: Document context changed")
-        
-        let inputText = getCurrentContext() ?? ""
-        if inputText.isEmpty {
-            //Reset current typing input if there's no text
-            currentTypingInput = ""
-            return;
-        }
-        
-        
-        let textInputChars = getCurrentContext() ?? ""
-        print("Text before input: \(getCurrentContext() ?? "")")
-        print("Text after input: \(textDocumentProxy.documentContextAfterInput ?? "")")
-        print("Current input: \(textDocumentProxy.documentIdentifier.uuidString)")
+        //When text input changes, this func will call with the updated text input.
     }
     
     // MARK: - Keyboard Handling Methods
     
-    private func handleTextChanged(_ text: String) {
-        //print("📝 KeyboardViewController: Text changed to: '\(text)'")
-        
-        // Update current typing input for text replacement suggestions
-        //currentTypingInput = getCurrentWord() ?? ""
-        //print("🔤 KeyboardViewController Current typing input: '\(currentTypingInput)'")
-    }
-    
-    private func handleKeyPressed(_ key: String) {
+    private func handleKeyPressed(_ data: KeyItem) {
         // Handle different types of key presses
-        print("⌨️ KeyboardViewController ::: handleKeyPressed :: Key pressed: '\(key)'")
-        
-        switch key {
-        case "delete", "backspace", "⌫":  // Handle both text and symbol for delete
-            handleDeleteKey()
-        case "return", "enter", "\n":     // Handle both text and newline for return
-            handleReturnKey()
-        case "space", " ":                // Handle both text and actual space
-            handleSpaceKey()
-        case "shift":
-            handleShiftKey()
-        case "caps_lock":
-            handleCapsLockKey()
-        case "next_keyboard", "globe":
-            advanceToNextInputMode()
-        case "dismiss", "hide_keyboard":
-            handleDismissKeyboard()
-        default:
-            // Regular character input
-            let finalText = processTextCase(key)
-            insertText(finalText)
-            
-            // Reset shift after typing (unless caps lock is on)
-            if isShiftPressed && !isCapsLockOn {
-                isShiftPressed = false
-            }
+        print("⌨️ KeyboardViewController ::: handleKeyPressed :: Key pressed: '\(data)'")
+        guard let keyValue = data.key else {
+            insertText(data.value)
+            return
         }
+        switch keyValue {
+        case .delete:  // Handle both text and symbol for delete
+            handleDeleteKey()
+        case .enter:     // Handle both text and newline for return
+            handleReturnKey()
+        case .space:                // Handle both text and actual space
+            handleSpaceKey()
+//        case "caps_lock":
+//            handleCapsLockKey()
+//        case "next_keyboard", "globe":
+//            advanceToNextInputMode()
+//        case "dismiss", "hide_keyboard":
+//            handleDismissKeyboard()
+        default:
+            insertText(data.value)
+        }
+      
     }
     
     private func handleTextSubmitted(_ text: String) {
@@ -190,7 +156,6 @@ class KeyboardViewController: UIInputViewController {
         
         // Clear text replacement suggestions after submit
         textReplacementsVM.textReplacements = []
-        currentTypingInput = ""
         
         // Additional submit logic can be added here:
         // - Analytics tracking
@@ -252,31 +217,11 @@ class KeyboardViewController: UIInputViewController {
     private func handleSpaceKey() {
         insertText(" ")
     }
-    
-    private func handleShiftKey() {
-        isShiftPressed.toggle()
-        // Visual feedback could be added here
-    }
-    
-    private func handleCapsLockKey() {
-        isCapsLockOn.toggle()
-        isShiftPressed = isCapsLockOn
-        // Visual feedback could be added here
-    }
-    
+
     private func insertText(_ text: String) {
         textDocumentProxy.insertText(text)
     }
-    
-    // MARK: - Text Processing
-    
-    private func processTextCase(_ text: String) -> String {
-        if isShiftPressed || isCapsLockOn {
-            return text.uppercased()
-        }
-        return text.lowercased()
-    }
-    
+        
     // MARK: - Keyboard Utilities
     
     private func requestKeyboardDismissal() {

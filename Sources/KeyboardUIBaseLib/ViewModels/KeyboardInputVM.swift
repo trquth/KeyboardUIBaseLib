@@ -60,8 +60,6 @@ public class KeyboardInputVM: ObservableObject {
     // MARK: - Keyboard Input Handling
     func handleKeyboardInput(_ key: String, callback: TextChangeCallback?) {
         print("🔑 KeyboardInputVM handleKeyboardInput :: Key pressed: '\(key)' with special key: \(String(describing: KeyboardLayout.getSpecialKey(for: key) ?? .none))")
-       
-        
         lastPressedKey = key
         if KeyboardLayout.isSpecialKey(key) {
             guard let specialKey = KeyboardLayout.getSpecialKey(for: key) else{
