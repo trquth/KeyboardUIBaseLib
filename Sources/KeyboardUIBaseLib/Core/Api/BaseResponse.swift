@@ -4,7 +4,7 @@
 //
 //  Created by Thien Tran-Quan on 7/6/25.
 //
-struct BaseResponse<T: Decodable>: Decodable {
+struct BaseResponse<T: Decodable & Sendable>: Decodable, Sendable {
     let status: Int?
     let message: String?
     let data: T

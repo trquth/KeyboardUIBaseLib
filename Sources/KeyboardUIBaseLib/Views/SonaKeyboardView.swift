@@ -7,19 +7,34 @@
 
 import SwiftUI
 
+import Alamofire
+
 struct SonaKeyboardView: View {
     @State private var showSupportedLanguages = false
     @State private var showDeleteConfirmation = false
     
+    private let sonaApiService = SonaApiService()
+    @StateObject private var sonaVM = SonaVM()
+    
     private var textEditorButton: some View {
-        WIconButton("text_editor_ico")
-            .buttonStyle(.contained)
-            .backgroundColor(Color(hex: "#F6F5F4"))
-            .foregroundColor(.black)
-            .buttonSize(width: 45, height: 45)
-            .iconSize(width: 15.76, height: 18.91)
-            .cornerRadius(16)
-            .disabled()
+        WIconButton("text_editor_ico") {
+            Task { @MainActor in
+                do {
+                    try await sonaVM.rewriteText(input: "Hello I im Binhdadads", tone: "Neutral ", persona: "Neutral")
+                }catch {
+                    
+                }
+            }
+        }
+        .buttonStyle(.contained)
+        .backgroundColor(Color(hex: "#F6F5F4"))
+        .foregroundColor(.black)
+        .buttonSize(width: 45, height: 45)
+        .iconSize(width: 15.76, height: 18.91)
+        .cornerRadius(16)
+        //.disabled()
+        
+        
     }
     
     private var translationButton: some View {

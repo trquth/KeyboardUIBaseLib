@@ -53,7 +53,7 @@ struct ApiBase: Sendable {
         method: HTTPMethodEnum = .get,
         parameters: [String: any Any & Sendable]? = nil,
         httpHeaders: [String: String]? = nil,
-        encoding: ParameterEncoding = URLEncoding.default,
+        encoding: any ParameterEncoding = URLEncoding.default,
         timeout: TimeInterval? = nil
     ) async throws -> BaseResponse<T> {
         
@@ -66,12 +66,13 @@ struct ApiBase: Sendable {
             headers = HTTPHeaderBase.customHTTPHeader(httpHeaders)
         }
         
-        print("🌐 ApiBase: Making \(method.rawValue) request to: \(url)")
+        print("🌐 ApiBase: Making \(method.rawValue) request to: \(url) with headers: \(headers) and parameters: \(parameters ?? [:])")
         
         return try await withCheckedThrowingContinuation { continuation in
             session.request(url, method: method.httpMethod, parameters: parameters, encoding: encoding, headers: headers)
                 .validate()
                 .responseData { response in
+                    print("🌐 ApiBase: Received response for \(method.rawValue) request to: \(url) statusCode: \(response.response?.statusCode ?? 0)")
                     self.handleResponse(response: response, continuation: continuation)
                 }
         }
@@ -128,7 +129,7 @@ struct ApiBase: Sendable {
     private func parseResponseData<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        //decoder.keyDecodingStrategy = .convertFromSnakeCase
         return try decoder.decode(T.self, from: data)
     }
     
