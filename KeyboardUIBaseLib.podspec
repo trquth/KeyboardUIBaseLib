@@ -21,11 +21,11 @@ Pod::Spec.new do |s|
 TODO: Add long description of the pod here.
                        DESC
 
-  s.homepage         = 'github.com'
+  s.homepage         = 'https://github.com/trquth/KeyboardUIBaseLib'
   # s.screenshots     = 'www.example.com/screenshots_1', 'www.example.com/screenshots_2'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { '11423829' => 'tranquthien@gmail.com' }
-  s.source           = { :git => 'github.com', :tag => s.version.to_s }
+  s.source           = { :git => 'https://github.com/trquth/KeyboardUIBaseLib.git', :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 
   s.ios.deployment_target = '17.0'
