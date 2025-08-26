@@ -15,11 +15,13 @@ class LoadingVM: ObservableObject {
     
     /// Start loading
     func startLoading() {
+        print("Start loading...")
         isLoading = true
     }
     
     /// Stop loading
     func stopLoading() {
+        print("Stop loading...")
         isLoading = false
     }
     

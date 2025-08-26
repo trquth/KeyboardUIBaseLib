@@ -7,10 +7,9 @@
 
 import Foundation
 
+@MainActor
 final class DIContainer: Sendable{
-   static let shared = DIContainer()
-    
-    var sonaAPIService: SonaApiServiceProtocol  {
-        SonaApiService()
-    }
+    static let shared = DIContainer()
+    lazy var  sonaAPIService: SonaApiServiceProtocol = SonaApiService()
+    lazy var loadingVM : LoadingVM = LoadingVM()
 }

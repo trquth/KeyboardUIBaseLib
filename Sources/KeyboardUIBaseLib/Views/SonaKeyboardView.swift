@@ -57,10 +57,9 @@ struct SonaKeyboardView: View {
 }
 
 #Preview {
-    @Previewable @StateObject var container = SonaAppContainer()
-    
+    @Previewable @StateObject var container = SonaAppContainer(container: DIContainer.shared)
+
     SonaKeyboardView()
         .keyboardFramePreview()
-        .environmentObject(container.sonaVM)
-        .environmentObject(container.loadingVM)
+        .environmentObject(container)
 }
