@@ -10,17 +10,20 @@ import SwiftUI
 @MainActor
 final class SonaVM: ObservableObject {
     private let sonaApiService: SonaApiServiceProtocol
+    private var loadingVM: LoadingVM
     
-    init(sonaApiService: SonaApiServiceProtocol) {
+    init(sonaApiService: SonaApiServiceProtocol, loadingVM: LoadingVM) {
         self.sonaApiService = sonaApiService
+        self.loadingVM = loadingVM
     }
     
     func rewriteText(_ data: RewriteRequestParam) async throws -> Void {
         do {
-            let data = try await sonaApiService.rewriteApi(data)
-            print("Rewrite Text Data: \(data)")
-        } catch {
-            print("Error in rewriteText: \(error)")
+            loadingVM.startLoading()
+            let result = try await sonaApiService.rewriteApi(data)
+            loadingVM.stopLoading()
+        } catch  {
+            loadingVM.stopLoading()
         }
     }
 }

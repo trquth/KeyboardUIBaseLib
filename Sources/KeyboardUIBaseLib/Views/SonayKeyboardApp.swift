@@ -8,12 +8,16 @@
 import SwiftUI
 
 struct SonayKeyboardApp: View {
-  
+    @StateObject private var sonaContainer = SonaAppContainer()
+    
     var body: some View {
         SonaKeyboardView()
+            .environmentObject(sonaContainer.sonaVM)
+            .environmentObject(sonaContainer.loadingVM)
     }
 }
 
 #Preview {
     SonayKeyboardApp()
+        .keyboardBorderPreview()
 }

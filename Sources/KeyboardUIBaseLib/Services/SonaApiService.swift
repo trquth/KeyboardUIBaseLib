@@ -41,6 +41,7 @@ class SonaApiService: SonaApiServiceProtocol {
                 url: url,
                 method: .post,
                 parameters: params,
+                httpHeaders: ["Authorization" :" Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGFjMmU4YmQwZWUxMzIwMDMzZTVjMTgiLCJpYXQiOjE3NTYxOTk0MzQsImV4cCI6MTc1NjgwNDIzNCwiYXVkIjoic29uYS1hcHAiLCJpc3MiOiJzb25hLWFwaSJ9.TeUktzu7TKwXcHj-jw5pLU5gwV1IHHlIlDklNEu9KB8"],
                 encoding: JSONEncoding.default
             )
             return response.data
