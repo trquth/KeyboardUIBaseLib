@@ -7,24 +7,20 @@
 
 import SwiftUI
 
+@MainActor
 final class SonaVM: ObservableObject {
-    private var sonaApiService: SonaApiServiceProtocol = SonaApiService()
+    private let sonaApiService: SonaApiServiceProtocol
     
-//    init(sonaApiService: SonaApiServiceProtocol) {
-//          _sonaApiService = sonaApiService
-//      }
-    @MainActor
-    func rewriteText(input: String, tone: String, persona: String)  async throws -> Void {
-        Task { @MainActor in
-            do {
-                let data =  try await sonaApiService.rewrite()
-                print("Rewrite Text Data: \(data)")
-            } catch {
-                print("Error in rewriteText: \(error)")
-            }
+    init(sonaApiService: SonaApiServiceProtocol) {
+        self.sonaApiService = sonaApiService
+    }
+    
+    func rewriteText(_ data: RewriteRequestParam) async throws -> Void {
+        do {
+            let data = try await sonaApiService.rewriteApi(data)
+            print("Rewrite Text Data: \(data)")
+        } catch {
+            print("Error in rewriteText: \(error)")
         }
-        
-        
-//        try? await sonaApiService.postExample()
     }
 }

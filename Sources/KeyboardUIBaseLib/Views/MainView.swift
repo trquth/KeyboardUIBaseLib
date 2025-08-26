@@ -63,7 +63,8 @@ public struct MainView: View {
                 }
             }
         case .sona:
-            SonaKeyboardView()
+            //SonaKeyboardView()
+            SonayKeyboardApp()
         }
     }
     

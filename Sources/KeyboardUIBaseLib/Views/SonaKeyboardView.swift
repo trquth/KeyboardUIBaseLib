@@ -13,14 +13,19 @@ struct SonaKeyboardView: View {
     @State private var showSupportedLanguages = false
     @State private var showDeleteConfirmation = false
     
-    private let sonaApiService = SonaApiService()
-    @StateObject private var sonaVM = SonaVM()
+    @StateObject private var sonaVM: SonaVM
+    
+    init(contaner: DIContainer = .shared){
+        _sonaVM = StateObject(wrappedValue: SonaVM(sonaApiService: contaner.sonaAPIService))
+    }
+    
     
     private var textEditorButton: some View {
         WIconButton("text_editor_ico") {
             Task { @MainActor in
                 do {
-                    try await sonaVM.rewriteText(input: "Hello I im Binhdadads", tone: "Neutral ", persona: "Neutral")
+                    let data = RewriteRequestParam(message: "Hello I im Binhdadads", tone: "Neutral", persona: "Neutral")
+                    try await sonaVM.rewriteText(data)
                 }catch {
                     
                 }
