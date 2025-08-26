@@ -25,6 +25,7 @@ struct WIconButton: View {
     private var _foregroundColor: Color
     private var _cornerRadius: CGFloat?
     private var _isActive: Bool
+    private var _isEnabled: Bool
     private var _action: () -> Void
     
     // MARK: - Initializer (WIconButton style)
@@ -37,6 +38,7 @@ struct WIconButton: View {
         foregroundColor: Color = .primary,
         cornerRadius: CGFloat? = nil,
         isActive: Bool = false,
+        isEnabled: Bool = true,
         action: @escaping () -> Void = {}
     ) {
         self._iconName = iconName
@@ -47,11 +49,16 @@ struct WIconButton: View {
         self._foregroundColor = foregroundColor
         self._cornerRadius = cornerRadius
         self._isActive = isActive
+        self._isEnabled = isEnabled
         self._action = action
     }
     
     // MARK: - Computed Properties (WIconButton style)
     private var effectiveBackgroundColor: Color {
+        if !_isEnabled {
+            return Color(hex: "#F6F5F4")
+        }
+        
         if _isActive {
             return Color(hex: "#007AFF")
         }
@@ -67,6 +74,10 @@ struct WIconButton: View {
     }
     
     private var effectiveForegroundColor: Color {
+        if !_isEnabled {
+            return .black.opacity(0.3)
+        }
+        
         if _isActive {
             return .white
         }
@@ -122,7 +133,7 @@ struct WIconButton: View {
         case .contained:
             RoundedRectangle(cornerRadius: effectiveCornerRadius)
                 .fill(effectiveBackgroundColor)
-                
+            
         case .outlined:
             RoundedRectangle(cornerRadius: effectiveCornerRadius)
                 .stroke(effectiveForegroundColor, lineWidth: 1.5)
@@ -130,7 +141,7 @@ struct WIconButton: View {
                     RoundedRectangle(cornerRadius: effectiveCornerRadius)
                         .fill(effectiveBackgroundColor)
                 )
-                
+            
         case .minimal:
             Color.clear
         }
@@ -145,6 +156,8 @@ struct WIconButton: View {
         .background(backgroundView)
         .scaleEffect(_isActive ? 0.95 : 1.0)
         .animation(.easeInOut(duration: 0.1), value: _isActive)
+        .disabled(!_isEnabled)
+        .allowsHitTesting(_isEnabled)
     }
 }
 
@@ -201,6 +214,16 @@ extension WIconButton {
         return copy
     }
     
+    func enabled(_ isEnabled: Bool) -> WIconButton {
+        var copy = self
+        copy._isEnabled = isEnabled
+        if !isEnabled {
+            copy._backgroundColor = Color(hex: "#F6F5F4")
+            copy._foregroundColor = .black.opacity(0.3)
+        }
+        return copy
+    }
+    
     // MARK: - Enhanced Modifiers (WIconButton style)
     
     // Quick style presets
@@ -224,17 +247,6 @@ extension WIconButton {
         copy._style = .minimal
         copy._backgroundColor = .clear
         copy._foregroundColor = color
-        return copy
-    }
-    
-    // State modifiers
-    func disabled(isDisable: Bool = true) -> WIconButton {
-        var copy = self
-        if(!isDisable) {
-            return copy
-        }
-        copy._backgroundColor = Color(hex: "#F6F5F4")
-        copy._foregroundColor = .black.opacity(0.3)
         return copy
     }
 }
@@ -345,13 +357,15 @@ extension WIconButton {
                             .buttonSize(width: 46.5, height: 45)
                             .iconSize(width: 17, height: 15)
                         
-                        WIconButton("upper_case_ico")
-                            .buttonStyle(.outlined)
-                            .backgroundColor(Color(hex: "#E8E8E8"))
-                            .foregroundColor(.black)
-                            .buttonSize(width: 46.5, height: 45)
-                            .iconSize(width: 17, height: 15)
-                            .disabled()
+                        WIconButton("upper_case_ico"){
+                            print("Upper case pressed")
+                        }
+                        .buttonStyle(.outlined)
+                        .backgroundColor(Color(hex: "#E8E8E8"))
+                        .foregroundColor(.black)
+                        .buttonSize(width: 46.5, height: 45)
+                        .iconSize(width: 17, height: 15)
+                        .enabled(false)
                     }
                     
                     Text("Keyboard-style asset buttons")

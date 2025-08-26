@@ -88,12 +88,6 @@ extension WCircleButton {
         return copy
     }
     
-    func disabled() -> WCircleButton {
-        var copy = self
-        copy._iconButton = copy._iconButton.disabled()
-        return copy
-    }
-    
     // Quick style presets
     func outlined(color: Color = .blue) -> WCircleButton {
         var copy = self
