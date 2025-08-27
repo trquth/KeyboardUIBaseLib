@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct RewriteRequestParam: Codable, Sendable {
+public struct RewriteRequestParam: Codable, Sendable {
     let message: String
     let type: String
     let tone: String
