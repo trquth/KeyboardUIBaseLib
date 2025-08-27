@@ -13,8 +13,8 @@ final class SonaViewModel: ObservableObject {
     private let loadingVM: LoadingViewModel
     
     @Published var input:String = "Hello I im Binhdadads"
-    @Published private(set) var selectedTone: String = ""
-    @Published private(set) var selectedPersona: String = ""
+    @Published private(set) var selectedTone: String = "Neutral" // Default tone
+    @Published private(set) var selectedPersona: String = "Neutral" //Default persona
     
     
     init(sonaApiService: SonaApiServiceProtocol, loadingVM: LoadingViewModel) {
