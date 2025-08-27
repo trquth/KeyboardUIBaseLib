@@ -14,6 +14,7 @@ import Alamofire
 @MainActor
 protocol SonaApiServiceProtocol {
     func rewriteApi(_ data: RewriteRequestParam) async throws -> RewriteDataResponse
+    func proofreadApi(_ data: ProofReadRequestParam) async throws -> ProofReadDataResponse 
 }
 
 class SonaApiService: SonaApiServiceProtocol {
@@ -50,5 +51,37 @@ class SonaApiService: SonaApiServiceProtocol {
             throw error
         }
     }
+    
+    //    curl --location 'https://pr0lkn29o9.execute-api.us-east-1.amazonaws.com/Prod/api/proofread' \
+    //    --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGFjMmU4YmQwZWUxMzIwMDMzZTVjMTgiLCJpYXQiOjE3NTYxOTk0MzQsImV4cCI6MTc1NjgwNDIzNCwiYXVkIjoic29uYS1hcHAiLCJpc3MiOiJzb25hLWFwaSJ9.TeUktzu7TKwXcHj-jw5pLU5gwV1IHHlIlDklNEu9KB8' \
+    //    --header 'Content-Type: application/json' \
+    //    --data '{
+    //        "message": "Hello I im Binh",
+    //        "type": "proofread",
+    //        "version": "proofread-v1"
+    //    }'
+    func proofreadApi(_ data: ProofReadRequestParam) async throws -> ProofReadDataResponse {
+        do {
+            let params: [String: Any & Sendable] = [
+                "message": data.message,
+                "type": data.type,
+                "version": data.version
+            ]
+            let url = "\(API_BASE_URL)/Prod/api/proofread"
+            let response: BaseResponse<ProofReadDataResponse> = try await ApiBase.shared.request(
+                url: url,
+                method: .post,
+                parameters: params,
+                httpHeaders: ["Authorization" :" Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGFjMmU4YmQwZWUxMzIwMDMzZTVjMTgiLCJpYXQiOjE3NTYxOTk0MzQsImV4cCI6MTc1NjgwNDIzNCwiYXVkIjoic29uYS1hcHAiLCJpc3MiOiJzb25hLWFwaSJ9.TeUktzu7TKwXcHj-jw5pLU5gwV1IHHlIlDklNEu9KB8"],
+                encoding: JSONEncoding.default
+            )
+            return response.data
+        } catch {
+            print("Error: \(error.localizedDescription)")
+            throw error
+        }
+    }
+    
+    
 }
 

@@ -9,7 +9,7 @@ import SwiftUI
 
 struct TonesView: View {
     @EnvironmentObject private var sonaVM: SonaViewModel
-
+    
     private func isSelectedTone(_ tone: String) -> Bool {
         return sonaVM.selectedTone == tone
     }
@@ -17,6 +17,37 @@ struct TonesView: View {
     private func isSelectedPersona(_ persona: String) -> Bool {
         return sonaVM.selectedPersona == persona
     }
+    
+    enum SelectionType {
+        case tone(String)
+        case persona(String)
+    }
+    
+    private func onSelect(type: SelectionType) async{
+        do {
+            let input = sonaVM.input
+            var selectedTone =  !sonaVM.selectedTone.isEmpty ? sonaVM.selectedTone : DEFAULT_SONA_TONE
+            var selectedPersona = !sonaVM.selectedPersona.isEmpty ? sonaVM.selectedPersona : DEFAULT_SONA_PERSONA
+            
+            switch type {
+            case .tone(let tone):
+                sonaVM.selectTone(tone)
+                selectedTone = tone
+                
+            case .persona(let persona):
+                sonaVM.selectPersona(persona)
+                selectedPersona = persona
+            }
+            print("Selected tone: \(selectedTone), persona: \(selectedPersona)")
+            let params = RewriteRequestParam(message: input, tone: selectedTone, persona: selectedPersona)
+            let data =   try await sonaVM.rewriteText(params)
+            print("Rewritten text: \(data)")
+        }catch {
+            print("Error rewriting text: \(error)")
+        }
+        
+    }
+    
     
     private let linearGradientColors = [Color.black.opacity(0),
                                         Color.black.opacity(0.3),
@@ -59,7 +90,9 @@ struct TonesView: View {
                     HStack(spacing:5) {
                         ForEach(SONA_TONES, id: \.self) { option in
                             ChipView(option){
-                                sonaVM.selectTone(option)
+                                Task {
+                                    await onSelect(type: .tone(option))
+                                }
                             }.isSelected(isSelectedTone(option))
                                 .small()
                         }
@@ -71,7 +104,9 @@ struct TonesView: View {
                     HStack(spacing:5) {
                         ForEach(SONA_PERSONAS , id: \.self) { option in
                             ChipView(option){
-                                sonaVM.selectPersona(option)
+                                Task {
+                                    await onSelect(type: .persona(option))
+                                }
                             }.isSelected(isSelectedPersona(option))
                         }
                     }

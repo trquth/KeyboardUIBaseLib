@@ -13,8 +13,8 @@ final class SonaViewModel: ObservableObject {
     private let loadingVM: LoadingViewModel
     
     @Published var input:String = "Hello I im Binhdadads"
-    @Published private(set) var selectedTone: String = "Neutral" // Default tone
-    @Published private(set) var selectedPersona: String = "Neutral" //Default persona
+    @Published private(set) var selectedTone: String = "" // Default tone
+    @Published private(set) var selectedPersona: String = "" //Default persona
     
     
     init(sonaApiService: SonaApiServiceProtocol, loadingVM: LoadingViewModel) {
@@ -22,14 +22,27 @@ final class SonaViewModel: ObservableObject {
         self.loadingVM = loadingVM
     }
     
-    func rewriteText(_ data: RewriteRequestParam) async throws -> Void {
+    func rewriteText(_ data: RewriteRequestParam) async throws -> RewriteDataResponse {
         do {
             // Validate input data using RewriteValidator
-           try RewriteValidator.validate(data)
+            try RewriteValidator.validate(data)
             
             loadingVM.startLoading()
-            try await sonaApiService.rewriteApi(data)
+            let data =  try await sonaApiService.rewriteApi(data)
             loadingVM.stopLoading()
+            return data
+        } catch {
+            loadingVM.stopLoading()
+            throw error // Re-throw validation or API errors
+        }
+    }
+    
+    func proofreadText(_ data: ProofReadRequestParam) async throws -> ProofReadDataResponse {
+        do {
+            loadingVM.startLoading()
+            let data =  try await sonaApiService.proofreadApi(data)
+            loadingVM.stopLoading()
+            return data
         } catch {
             loadingVM.stopLoading()
             throw error // Re-throw validation or API errors

@@ -92,7 +92,7 @@ extension ToastMessage {
 
 // MARK: - Simple Toast Manager
 @MainActor
-class SimpleToastManager: ObservableObject {
+class ToastMessageManager: ObservableObject {
     @Published var currentToast: ToastMessage?
     @Published var isVisible = false
     
@@ -154,36 +154,10 @@ class SimpleToastManager: ObservableObject {
     }
 }
 
-// MARK: - Toast View Modifier
-extension View {
-    func simpleToast(_ manager: SimpleToastManager) -> some View {
-        ZStack {
-            self
-            
-            if manager.isVisible, let toast = manager.currentToast {
-                VStack {
-                    Spacer()
-                    
-                    toast
-                        .padding(.horizontal, 16)
-                        .padding(.bottom, 50)
-                        // Simple bottom slide animation with opacity
-                        .opacity(manager.isVisible ? 1.0 : 0.0)
-                        .offset(y: manager.isVisible ? 0 : 80)
-                        .onTapGesture {
-                            manager.hide()
-                        }
-                }
-                .zIndex(1000)
-            }
-        }
-    }
-}
-
 // MARK: - Preview
 #Preview {
     struct ToastPreview: View {
-        @StateObject private var toastManager = SimpleToastManager()
+        @StateObject private var toastManager = ToastMessageManager()
         
         var body: some View {
             VStack(spacing: 30) {
@@ -233,7 +207,7 @@ extension View {
                 Spacer()
             }
             .padding()
-            .simpleToast(toastManager)
+            .displayToastMessage(toastManager)
         }
     }
     

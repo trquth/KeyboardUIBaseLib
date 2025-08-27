@@ -201,7 +201,6 @@ extension WTextButton {
     }
     
     func height(_ height: CGFloat = 45) -> WTextButton {
-        print("Height: \(height)")
         var copy = self
         copy._buttonHeight = height
         return copy
