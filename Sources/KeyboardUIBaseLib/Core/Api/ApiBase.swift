@@ -19,7 +19,6 @@ struct HTTPHeaderBase {
     static func customHTTPHeader(_ header: [String: String]) -> HTTPHeaders {
         let defaultHeaders = defaultHTTPHeader.dictionary
         let customHeaders = defaultHeaders.merging(header) { (_, new) in new }
-        print("🌐 HTTPHeaderBase: Custom HTTP Headers created - \(customHeaders)")
         return HTTPHeaders(customHeaders)
     }
     
@@ -66,12 +65,15 @@ struct ApiBase: Sendable {
             headers = HTTPHeaderBase.customHTTPHeader(httpHeaders)
         }
         
-        print("🌐 ApiBase: Making \(method.rawValue) request to: \(url) with headers: \(headers) and parameters: \(parameters ?? [:])")
-        
         return try await withCheckedThrowingContinuation { continuation in
-            session.request(url, method: method.httpMethod, parameters: parameters, encoding: encoding, headers: headers)
+            let request = session.request(url, method: method.httpMethod, parameters: parameters, encoding: encoding, headers: headers)
+            
+            request
                 .validate()
                 .responseData { response in
+                    // Log cURL command after request is prepared
+                    ApiBaseUtil.logCurlCommand(for: request)
+                    
                     print("🌐 ApiBase: Received response for \(method.rawValue) request to: \(url) statusCode: \(response.response?.statusCode ?? 0)")
                     self.handleResponse(response: response, continuation: continuation)
                 }
@@ -90,14 +92,18 @@ struct ApiBase: Sendable {
         let authHeaders = HTTPHeaderBase.authHeader(token: token, type: tokenType)
         
         return try await withCheckedThrowingContinuation { continuation in
-            session.request(url, method: method.httpMethod, parameters: parameters, encoding: encoding, headers: authHeaders)
+            let request = session.request(url, method: method.httpMethod, parameters: parameters, encoding: encoding, headers: authHeaders)
+            
+            request
                 .validate()
                 .responseData { response in
+                    // Log cURL command after request is prepared
+                    ApiBaseUtil.logCurlCommand(for: request)
+                    
                     self.handleResponse(response: response, continuation: continuation)
                 }
         }
     }
-    
     // MARK: - Private Helper Methods
     
     private func handleResponse<T: Decodable>(
