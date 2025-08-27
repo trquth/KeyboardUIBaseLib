@@ -45,7 +45,11 @@ struct TonesView: View {
             print("Rewritten text: \(data)")
         }catch {
             print("Error rewriting text: \(error)")
-            toastMessageVM.showError("\(error.localizedDescription)")
+            if let appError = error as? AppError {
+                toastMessageVM.showError("\(appError.message)")
+            } else {
+                toastMessageVM.showError("\(error.localizedDescription)")
+            }
         }
         
     }
@@ -119,7 +123,7 @@ struct TonesView: View {
             leftBlurView
             rightBlurView
         }.frame(height: 95)
-            .displayToastMessage(toastMessageVM)
+            //.displayToastMessage(toastMessageVM)
     }
 }
 

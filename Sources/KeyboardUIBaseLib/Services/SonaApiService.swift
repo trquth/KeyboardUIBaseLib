@@ -47,7 +47,9 @@ class SonaApiService: SonaApiServiceProtocol {
             )
             return response.data
         } catch {
-            print("Error: \(error.localizedDescription)")
+            if let apiError = error as? ApiError {
+                throw  ApiErrorConverter.convert(apiError)
+            }
             throw error
         }
     }
@@ -77,8 +79,10 @@ class SonaApiService: SonaApiServiceProtocol {
             )
             return response.data
         } catch {
-            print("Error: \(error.localizedDescription)")
-            throw error
+            if let apiError = error as? ApiError {
+                throw  ApiErrorConverter.convert(apiError)
+            }
+            throw error  
         }
     }
     

@@ -9,6 +9,8 @@ import SwiftUI
 import Alamofire
 
 struct SonaKeyboardView: View {
+    @EnvironmentObject private var toastMessageVM: ToastMessageManager
+    
     @State private var showSupportedLanguages = false
     @State private var showDeleteConfirmation = false
     
@@ -53,6 +55,7 @@ struct SonaKeyboardView: View {
             }
         }
         .frame(height: 225)
+        .displayToastMessage(toastMessageVM)
     }
 }
 
@@ -63,4 +66,5 @@ struct SonaKeyboardView: View {
         .keyboardFramePreview()
         .environmentObject(container.sonaVM)
         .environmentObject(container.loadingVM)
+        .environmentObject(container.toastMessageVM)
 }

@@ -17,7 +17,11 @@ struct QuickTaskView: View {
             let param = ProofreadRequestParam(message: sonaVM.input)
             let data = try await sonaVM.proofreadText(param)
         }catch {
-            toastMessageVM.showError("Error rewriting text: \(error.localizedDescription)")
+            if let appError = error as? AppError {
+                toastMessageVM.showError("\(appError.message)")
+            } else {
+                toastMessageVM.showError("\(error.localizedDescription)")
+            }
             print("Error rewriting text: \(error)")
         }
     }
@@ -78,7 +82,8 @@ struct QuickTaskView: View {
                 goBackButton
                 forwardButton
             }
-        }.displayToastMessage(toastMessageVM)
+        }
+        //.displayToastMessage(toastMessageVM)
     }
 }
 

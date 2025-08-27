@@ -18,7 +18,7 @@ extension View {
                     
                     toast
                         .padding(.horizontal, 16)
-                        .padding(.bottom, 50)
+                        .padding(.bottom, 10)
                         // Simple bottom slide animation with opacity
                         .opacity(manager.isVisible ? 1.0 : 0.0)
                         .offset(y: manager.isVisible ? 0 : 80)

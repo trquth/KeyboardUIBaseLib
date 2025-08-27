@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum ApiError: Error, LocalizedError {
+public enum ApiError: Error, LocalizedError {
     case http(statusCode: Int, data: Data?)
     case decoding(Error)
     case underlying(Error)
@@ -17,7 +17,7 @@ enum ApiError: Error, LocalizedError {
     case networkUnavailable
     case unknown
     
-    var errorDescription: String? {
+  public var errorDescription: String? {
         switch self {
         case .http(let statusCode, _):
             return "HTTP Error: \(statusCode)"
