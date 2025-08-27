@@ -11,5 +11,5 @@ import Foundation
 final class DIContainer: Sendable{
     static let shared = DIContainer()
     lazy var  sonaAPIService: SonaApiServiceProtocol = SonaApiService()
-    lazy var loadingVM : LoadingVM = LoadingVM()
+    lazy var loadingVM : LoadingViewModel = LoadingViewModel()
 }

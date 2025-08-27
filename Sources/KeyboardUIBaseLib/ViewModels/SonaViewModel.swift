@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  SonaViewModel.swift
 //  KeyboardUIBaseLib
 //
 //  Created by Thien Tran-Quan on 23/8/25.
@@ -8,11 +8,11 @@
 import SwiftUI
 
 @MainActor
-final class SonaVM: ObservableObject {
+final class SonaViewModel: ObservableObject {
     private let sonaApiService: SonaApiServiceProtocol
-    private let loadingVM: LoadingVM
+    private let loadingVM: LoadingViewModel
     
-    init(sonaApiService: SonaApiServiceProtocol, loadingVM: LoadingVM) {
+    init(sonaApiService: SonaApiServiceProtocol, loadingVM: LoadingViewModel) {
         self.sonaApiService = sonaApiService
         self.loadingVM = loadingVM
     }

@@ -1,5 +1,5 @@
 //
-//  LoadingVM.swift
+//  LoadingViewModel.swift
 //  KeyboardUIBaseLib
 //
 //  Created by Assistant on 26/8/25.
@@ -8,7 +8,7 @@
 import SwiftUI
 
 @MainActor
-class LoadingVM: ObservableObject {
+class LoadingViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     
     // MARK: - Public Methods
