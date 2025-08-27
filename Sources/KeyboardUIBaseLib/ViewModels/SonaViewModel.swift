@@ -12,9 +12,9 @@ final class SonaViewModel: ObservableObject {
     private let sonaApiService: SonaApiServiceProtocol
     private let loadingVM: LoadingViewModel
     
-    @Published var input:String = ""
-    @Published var tone: String = ""
-    @Published var persona: String = ""
+    @Published var input:String = "Hello I im Binhdadads"
+    @Published private(set) var selectedTone: String = ""
+    @Published private(set) var selectedPersona: String = ""
     
     
     init(sonaApiService: SonaApiServiceProtocol, loadingVM: LoadingViewModel) {
@@ -25,7 +25,7 @@ final class SonaViewModel: ObservableObject {
     func rewriteText(_ data: RewriteRequestParam) async throws -> Void {
         do {
             // Validate input data using RewriteValidator
-            try RewriteValidator.validate(data)
+           try RewriteValidator.validate(data)
             
             loadingVM.startLoading()
             try await sonaApiService.rewriteApi(data)
@@ -37,10 +37,10 @@ final class SonaViewModel: ObservableObject {
     }
     
     func selectTone(_ tone: String) {
-        self.tone = tone
+        self.selectedTone = tone
     }
     
     func selectPersona(_ persona: String) {
-        self.persona = persona
+        self.selectedPersona = persona
     }
 }

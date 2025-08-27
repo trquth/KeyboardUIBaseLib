@@ -8,21 +8,23 @@
 import SwiftUI
 
 struct QuickTaskView: View {
-    @EnvironmentObject private var container: SonaAppContainer
+    @EnvironmentObject private var sonaVM: SonaViewModel
+    @EnvironmentObject private var loadingVM: LoadingViewModel
+
 
     private var textEditorButton: some View {
         QuickTaskButton("text_editor_ico"){
             Task { @MainActor in
                 do {
-                    let data = RewriteRequestParam(message: container.sonaVM.input, tone: container.sonaVM.tone, persona: container.sonaVM.persona)
-                    try await container.sonaVM.rewriteText(data)
+                    let data = RewriteRequestParam(message: sonaVM.input, tone: sonaVM.selectedTone, persona: sonaVM.selectedPersona)
+                    try await sonaVM.rewriteText(data)
                 }catch {
                     print("Error rewriting text: \(error)")
                 }
             }
         }.iconSize(width: 15.76, height: 18.91)
-            .loading(container.loadingVM.isLoading)
-            .disabled(container.loadingVM.isLoading)
+            .loading(loadingVM.isLoading)
+            .disabled(loadingVM.isLoading)
     }
     
     private var translationButton: some View {
@@ -77,5 +79,6 @@ struct QuickTaskView: View {
 #Preview {
     @Previewable @StateObject var container = SonaAppContainer(container: DIContainer.shared)
     QuickTaskView()
-        .environmentObject(container)
+        .environmentObject(container.sonaVM)
+        .environmentObject(container.loadingVM)
 }

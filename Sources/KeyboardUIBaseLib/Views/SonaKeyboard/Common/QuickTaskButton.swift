@@ -42,7 +42,7 @@ struct QuickTaskButton: View {
             .buttonSize(width: _size.width, height: _size.height)
             .iconSize(width: _iconSize.width, height: _iconSize.height)
             .cornerRadius(_cornerRadius)
-            .enabled(!(_isLoading || _isDisabled))
+            .disable(_isLoading || _isDisabled)
             .overlay(
                 // Show dots indicator when loading
                 Group {

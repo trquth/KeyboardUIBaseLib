@@ -8,15 +8,15 @@
 import SwiftUI
 
 struct TonesView: View {
+    @EnvironmentObject private var sonaVM: SonaViewModel
+
+    private func isSelectedTone(_ tone: String) -> Bool {
+        return sonaVM.selectedTone == tone
+    }
     
-    // Persona options from the image
-    private let personaOptions = [
-        "Encouraging", "Neutral", "Confident", "Reflective", "Persona Work Colleague"
-    ]
-    
-    private let personaOptions2 = [
-        "Neutral",  "Reflective", "Persona Work Colleague", "Confident", "Encouraging", "Neutral"
-    ]
+    private func isSelectedPersona(_ persona: String) -> Bool {
+        return sonaVM.selectedPersona == persona
+    }
     
     private let linearGradientColors = [Color.black.opacity(0),
                                         Color.black.opacity(0.3),
@@ -57,13 +57,11 @@ struct TonesView: View {
             VStack(spacing: 0) {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing:5) {
-                        ForEach(personaOptions, id: \.self) { option in
-                            ChipView(
-                                title: option,
-                                isSelected: false,
-                                size: .small
-                            ) {
-                            }
+                        ForEach(SONA_TONES, id: \.self) { option in
+                            ChipView(option){
+                                sonaVM.selectTone(option)
+                            }.isSelected(isSelectedTone(option))
+                                .small()
                         }
                     }
                     .padding(.horizontal, 25)
@@ -71,12 +69,10 @@ struct TonesView: View {
                 }
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing:5) {
-                        ForEach(personaOptions2 , id: \.self) { option in
-                            ChipView(
-                                title: option,
-                                isSelected: false
-                            ) {
-                            }
+                        ForEach(SONA_PERSONAS , id: \.self) { option in
+                            ChipView(option){
+                                sonaVM.selectPersona(option)
+                            }.isSelected(isSelectedPersona(option))
                         }
                     }
                     .padding(.horizontal, 25)
@@ -90,5 +86,8 @@ struct TonesView: View {
 }
 
 #Preview {
+    @Previewable @StateObject var container = SonaAppContainer(container: DIContainer.shared)
     TonesView()
+        .environmentObject(container.sonaVM)
+        .environmentObject(container.loadingVM)
 }

@@ -214,13 +214,9 @@ extension WIconButton {
         return copy
     }
     
-    func enabled(_ isEnabled: Bool) -> WIconButton {
+    func disable(_ isDisabled: Bool = true) -> WIconButton {
         var copy = self
-        copy._isEnabled = isEnabled
-        if !isEnabled {
-            copy._backgroundColor = Color(hex: "#F6F5F4")
-            copy._foregroundColor = .black.opacity(0.3)
-        }
+        copy._isEnabled = !isDisabled
         return copy
     }
     
@@ -365,7 +361,7 @@ extension WIconButton {
                         .foregroundColor(.black)
                         .buttonSize(width: 46.5, height: 45)
                         .iconSize(width: 17, height: 15)
-                        .enabled(false)
+                        .disable(false)
                     }
                     
                     Text("Keyboard-style asset buttons")

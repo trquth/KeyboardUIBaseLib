@@ -25,6 +25,7 @@ struct WTextButton: View {
     private var _foregroundColor: Color
     private var _cornerRadius: CGFloat?
     private var _isActive: Bool
+    private var _isDisabled: Bool
     private var _horizontalPadding: CGFloat
     private var _verticalPadding: CGFloat
     private var _buttonHeight: CGFloat?
@@ -42,6 +43,7 @@ struct WTextButton: View {
         horizontalPadding: CGFloat = 0,
         verticalPadding: CGFloat = 0,
         isActive: Bool = false,
+        isDisabled: Bool = false,
         buttonHeight: CGFloat? = nil,
         action: @escaping () -> Void = {}
     ) {
@@ -55,12 +57,17 @@ struct WTextButton: View {
         self._horizontalPadding = horizontalPadding
         self._verticalPadding = verticalPadding
         self._isActive = isActive
+        self._isDisabled = isDisabled
         self._buttonHeight = buttonHeight
         self._action = action
     }
     
     // MARK: - Computed Properties (WIconButton style)
     private var effectiveBackgroundColor: Color {
+        if _isDisabled {
+            return Color(hex: "#F6F5F4")
+        }
+        
         if _isActive {
             return Color(hex: "#007AFF")
         }
@@ -76,6 +83,10 @@ struct WTextButton: View {
     }
     
     private var effectiveForegroundColor: Color {
+        if _isDisabled {
+            return .black.opacity(0.3)
+        }
+        
         if _isActive {
             return .white
         }
@@ -166,6 +177,7 @@ struct WTextButton: View {
         .background(backgroundView)
         .scaleEffect(_isActive ? 0.95 : 1.0)
         .animation(.easeInOut(duration: 0.1), value: _isActive)
+        .allowsHitTesting(!_isDisabled)
     }
 }
 
@@ -290,13 +302,9 @@ extension WTextButton {
     }
     
     // State modifiers
-    func disabled(isDisable: Bool = true) -> WTextButton {
+    func disable(_ isDisabled: Bool = true) -> WTextButton {
         var copy = self
-        if(!isDisable) {
-            return copy
-        }
-        copy._backgroundColor = Color(hex: "#F6F5F4")
-        copy._foregroundColor = .black.opacity(0.3)
+        copy._isDisabled = isDisabled
         return copy
     }
 }
@@ -312,13 +320,18 @@ extension WTextButton {
                 
                 VStack(spacing: 12) {
                     HStack(spacing: 12) {
-                        WTextButton("space")
+                        WTextButton("space"){
+                            print("Space pressed")
+                        }
                             .buttonStyle(.outlined)
                             .backgroundColor(Color(hex: "#E8E8E8"))
                             .foregroundColor(.black)
                             .buttonSize(width: 120, height: 45)
+                            .disable()
                         
-                        WTextButton("return")
+                        WTextButton("return"){
+                            print("Return pressed")
+                        }
                             .buttonStyle(.contained)
                             .backgroundColor(Color(hex: "#007AFF"))
                             .foregroundColor(.white)
