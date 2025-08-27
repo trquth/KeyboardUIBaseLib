@@ -7,12 +7,12 @@
 
 import Foundation
 
-public struct ProofReadRequestParam: Codable, Sendable {
+public struct ProofreadRequestParam: Codable, Sendable {
     let message: String
     let type: String
     let version: String
     
-    init(message: String, type: String = "rewrite", version: String = "proofread-v1") {
+    init(message: String, type: String = "proofread1", version: String = "proofread-v1") {
         self.message = message
         self.type = type
         self.version = version

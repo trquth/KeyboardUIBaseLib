@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct ProofReadDataResponse: Decodable {
+struct ProofreadDataResponse: Decodable {
     let output: String
     let promptUsed: String
     let version: String

@@ -10,17 +10,23 @@ import SwiftUI
 struct QuickTaskView: View {
     @EnvironmentObject private var sonaVM: SonaViewModel
     @EnvironmentObject private var loadingVM: LoadingViewModel
-
-
+    @EnvironmentObject private var toastMessageVM: ToastMessageManager
+    
+    private func onRewrite() async {
+        do {
+            let param = ProofreadRequestParam(message: sonaVM.input)
+            let data = try await sonaVM.proofreadText(param)
+        }catch {
+            toastMessageVM.showError("Error rewriting text: \(error.localizedDescription)")
+            print("Error rewriting text: \(error)")
+        }
+    }
+    
+    
     private var textEditorButton: some View {
         QuickTaskButton("text_editor_ico"){
-            Task { @MainActor in
-                do {
-                    let data = RewriteRequestParam(message: sonaVM.input, tone: sonaVM.selectedTone, persona: sonaVM.selectedPersona)
-                    try await sonaVM.rewriteText(data)
-                }catch {
-                    print("Error rewriting text: \(error)")
-                }
+            Task {
+                await onRewrite()
             }
         }.iconSize(width: 15.76, height: 18.91)
             .loading(loadingVM.isLoading)
@@ -72,7 +78,7 @@ struct QuickTaskView: View {
                 goBackButton
                 forwardButton
             }
-        }
+        }.displayToastMessage(toastMessageVM)
     }
 }
 
@@ -81,4 +87,6 @@ struct QuickTaskView: View {
     QuickTaskView()
         .environmentObject(container.sonaVM)
         .environmentObject(container.loadingVM)
+        .environmentObject(container.toastMessageVM)
+        
 }

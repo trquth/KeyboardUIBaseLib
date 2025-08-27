@@ -9,6 +9,7 @@ import SwiftUI
 
 struct TonesView: View {
     @EnvironmentObject private var sonaVM: SonaViewModel
+    @EnvironmentObject private var toastMessageVM: ToastMessageManager
     
     private func isSelectedTone(_ tone: String) -> Bool {
         return sonaVM.selectedTone == tone
@@ -44,6 +45,7 @@ struct TonesView: View {
             print("Rewritten text: \(data)")
         }catch {
             print("Error rewriting text: \(error)")
+            toastMessageVM.showError("\(error.localizedDescription)")
         }
         
     }
@@ -117,6 +119,7 @@ struct TonesView: View {
             leftBlurView
             rightBlurView
         }.frame(height: 95)
+            .displayToastMessage(toastMessageVM)
     }
 }
 
@@ -125,4 +128,5 @@ struct TonesView: View {
     TonesView()
         .environmentObject(container.sonaVM)
         .environmentObject(container.loadingVM)
+        .environmentObject(container.toastMessageVM)
 }

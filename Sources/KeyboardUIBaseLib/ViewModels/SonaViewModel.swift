@@ -37,8 +37,9 @@ final class SonaViewModel: ObservableObject {
         }
     }
     
-    func proofreadText(_ data: ProofReadRequestParam) async throws -> ProofReadDataResponse {
+    func proofreadText(_ data: ProofreadRequestParam) async throws -> ProofreadDataResponse {
         do {
+            try ProofreadValidator.validate(data)
             loadingVM.startLoading()
             let data =  try await sonaApiService.proofreadApi(data)
             loadingVM.stopLoading()

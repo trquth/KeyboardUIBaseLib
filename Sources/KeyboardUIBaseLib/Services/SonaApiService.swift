@@ -14,7 +14,7 @@ import Alamofire
 @MainActor
 protocol SonaApiServiceProtocol {
     func rewriteApi(_ data: RewriteRequestParam) async throws -> RewriteDataResponse
-    func proofreadApi(_ data: ProofReadRequestParam) async throws -> ProofReadDataResponse 
+    func proofreadApi(_ data: ProofreadRequestParam) async throws -> ProofreadDataResponse
 }
 
 class SonaApiService: SonaApiServiceProtocol {
@@ -60,7 +60,7 @@ class SonaApiService: SonaApiServiceProtocol {
     //        "type": "proofread",
     //        "version": "proofread-v1"
     //    }'
-    func proofreadApi(_ data: ProofReadRequestParam) async throws -> ProofReadDataResponse {
+    func proofreadApi(_ data: ProofreadRequestParam) async throws -> ProofreadDataResponse {
         do {
             let params: [String: Any & Sendable] = [
                 "message": data.message,
@@ -68,7 +68,7 @@ class SonaApiService: SonaApiServiceProtocol {
                 "version": data.version
             ]
             let url = "\(API_BASE_URL)/Prod/api/proofread"
-            let response: BaseResponse<ProofReadDataResponse> = try await ApiBase.shared.request(
+            let response: BaseResponse<ProofreadDataResponse> = try await ApiBase.shared.request(
                 url: url,
                 method: .post,
                 parameters: params,

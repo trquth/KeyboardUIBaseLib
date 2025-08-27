@@ -10,12 +10,14 @@ import SwiftUI
 class SonaAppContainer: ObservableObject {
     var sonaVM : SonaViewModel
     var loadingVM: LoadingViewModel
+    var toastMessageVM: ToastMessageManager
     
     init(container: DIContainer) {
         let loadingVM = container.loadingVM
         self.sonaVM = SonaViewModel(sonaApiService: container.sonaAPIService,
                              loadingVM: loadingVM)
         self.loadingVM = loadingVM
+        self.toastMessageVM = container.toastMessageVM
     }
 }
 
