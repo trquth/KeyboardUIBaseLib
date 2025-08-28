@@ -11,6 +11,8 @@ import Combine
 struct TonesView: View {
     @EnvironmentObject private var sonaVM: SonaViewModel
     @EnvironmentObject private var toastMessageVM: ToastMessageManager
+    @EnvironmentObject private var sharedDataVM: SharedDataViewModel
+    
     @StateObject private var loadingVM = LoadingViewModel()
     
     private func isSelectedTone(_ tone: String) -> Bool {
@@ -45,6 +47,10 @@ struct TonesView: View {
             loadingVM.startLoading()
             let params = RewriteRequestParam(message: input, tone: selectedTone, persona: selectedPersona)
             let data =   try await sonaVM.rewriteText(params)
+            let translatedText = data.output
+            if !translatedText.isEmpty {
+                sharedDataVM.setTranslatedText(translatedText)
+            }
             loadingVM.stopLoading()
             print("Rewritten text: \(data)")
         }catch {

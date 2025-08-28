@@ -13,4 +13,5 @@ final class DIContainer: Sendable{
     lazy var  sonaAPIService: SonaApiServiceProtocol = SonaApiService()
     lazy var loadingVM : LoadingViewModel = LoadingViewModel()
     lazy var toastMessageVM: ToastMessageManager = ToastMessageManager()
+    lazy var sharedDataVM: SharedDataViewModel = SharedDataViewModel()
 }

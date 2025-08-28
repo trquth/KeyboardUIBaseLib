@@ -11,6 +11,7 @@ class SonaAppContainer: ObservableObject {
     var sonaVM : SonaViewModel
     var loadingVM: LoadingViewModel
     var toastMessageVM: ToastMessageManager
+    var sharedDataVM: SharedDataViewModel
     
     init(container: DIContainer) {
         let loadingVM = container.loadingVM
@@ -18,6 +19,7 @@ class SonaAppContainer: ObservableObject {
                              loadingVM: loadingVM)
         self.loadingVM = loadingVM
         self.toastMessageVM = container.toastMessageVM
+        self.sharedDataVM = container.sharedDataVM
     }
 }
 

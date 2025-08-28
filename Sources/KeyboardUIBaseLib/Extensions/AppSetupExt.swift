@@ -12,6 +12,7 @@ extension View {
             self.environmentObject(container.sonaVM)
             .environmentObject(container.loadingVM)
             .environmentObject(container.toastMessageVM)
+            .environmentObject(container.sharedDataVM)
     }
     
     func setupApiConfig () -> some View {
