@@ -14,7 +14,7 @@ public struct RewriteRequestParam: Codable, Sendable {
     let persona: String
     let version: String
     
-    init(message: String, tone: String, persona: String, type: String = "rewrite1", version: String = "v1.0") {
+    init(message: String, tone: String, persona: String, type: String = "rewrite", version: String = "v1.0") {
         self.message = message
         self.tone = tone
         self.persona = persona

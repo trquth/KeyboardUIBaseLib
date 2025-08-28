@@ -64,7 +64,7 @@ struct SonaKeyboardView: View {
 
     SonaKeyboardView()
         .keyboardFramePreview()
-        .environmentObject(container.sonaVM)
-        .environmentObject(container.loadingVM)
-        .environmentObject(container.toastMessageVM)
+        .setupEnvironmentObjectsPreview(container)
+        .setupApiConfigPreview()
+        .setupTokenApiPreview() 
 }
