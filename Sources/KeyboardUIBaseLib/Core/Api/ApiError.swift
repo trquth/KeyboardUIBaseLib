@@ -15,6 +15,7 @@ public enum ApiError: Error, LocalizedError {
     case noData
     case timeout
     case networkUnavailable
+    case unauthorized
     case unknown
     
   public var errorDescription: String? {
@@ -33,6 +34,8 @@ public enum ApiError: Error, LocalizedError {
             return "Request timeout"
         case .networkUnavailable:
             return "Network unavailable"
+        case .unauthorized:
+            return "Unauthorized - authentication required"
         case .unknown:
             return "Unknown error occurred"
         }

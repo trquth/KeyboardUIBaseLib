@@ -18,7 +18,6 @@ protocol SonaApiServiceProtocol {
 }
 
 class SonaApiService: SonaApiServiceProtocol {
-    
     //    curl --location 'https://pr0lkn29o9.execute-api.us-east-1.amazonaws.com/Prod/api/rewrite' \
     //    --header 'Content-Type: application/json' \
     //    --data '{
@@ -30,6 +29,7 @@ class SonaApiService: SonaApiServiceProtocol {
     //    }'
     func rewriteApi(_ data: RewriteRequestParam) async throws -> RewriteDataResponse {
         do {
+            let BASE_URL = ApiConfiguration.shared.baseUrl
             let params: [String: Any & Sendable] = [
                 "message": data.message,
                 "type": data.type,
@@ -37,12 +37,12 @@ class SonaApiService: SonaApiServiceProtocol {
                 "persona": data.persona,
                 "version": data.version
             ]
-            let url = "\(API_BASE_URL)/Prod/api/rewrite"
-            let response: BaseResponse<RewriteDataResponse> = try await ApiBase.shared.request(
+            let url = "\(BASE_URL)/Prod/api/rewrite"
+            let response: BaseResponse<RewriteDataResponse> = try await ApiBase.shared.requestWithAuth(
                 url: url,
                 method: .post,
                 parameters: params,
-                httpHeaders: ["Authorization" :" Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGFjMmU4YmQwZWUxMzIwMDMzZTVjMTgiLCJpYXQiOjE3NTYxOTk0MzQsImV4cCI6MTc1NjgwNDIzNCwiYXVkIjoic29uYS1hcHAiLCJpc3MiOiJzb25hLWFwaSJ9.TeUktzu7TKwXcHj-jw5pLU5gwV1IHHlIlDklNEu9KB8"],
+//                httpHeaders: ["Authorization" :" Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGFjMmU4YmQwZWUxMzIwMDMzZTVjMTgiLCJpYXQiOjE3NTYxOTk0MzQsImV4cCI6MTc1NjgwNDIzNCwiYXVkIjoic29uYS1hcHAiLCJpc3MiOiJzb25hLWFwaSJ9.TeUktzu7TKwXcHj-jw5pLU5gwV1IHHlIlDklNEu9KB8"],
                 encoding: JSONEncoding.default
             )
             return response.data
@@ -64,17 +64,18 @@ class SonaApiService: SonaApiServiceProtocol {
     //    }'
     func proofreadApi(_ data: ProofreadRequestParam) async throws -> ProofreadDataResponse {
         do {
+            let BASE_URL = ApiConfiguration.shared.baseUrl
             let params: [String: Any & Sendable] = [
                 "message": data.message,
                 "type": data.type,
                 "version": data.version
             ]
-            let url = "\(API_BASE_URL)/Prod/api/proofread"
-            let response: BaseResponse<ProofreadDataResponse> = try await ApiBase.shared.request(
+            let url = "\(BASE_URL)/Prod/api/proofread"
+            let response: BaseResponse<ProofreadDataResponse> = try await ApiBase.shared.requestWithAuth(
                 url: url,
                 method: .post,
                 parameters: params,
-                httpHeaders: ["Authorization" :" Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGFjMmU4YmQwZWUxMzIwMDMzZTVjMTgiLCJpYXQiOjE3NTYxOTk0MzQsImV4cCI6MTc1NjgwNDIzNCwiYXVkIjoic29uYS1hcHAiLCJpc3MiOiJzb25hLWFwaSJ9.TeUktzu7TKwXcHj-jw5pLU5gwV1IHHlIlDklNEu9KB8"],
+//                httpHeaders: ["Authorization" :" Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGFjMmU4YmQwZWUxMzIwMDMzZTVjMTgiLCJpYXQiOjE3NTYxOTk0MzQsImV4cCI6MTc1NjgwNDIzNCwiYXVkIjoic29uYS1hcHAiLCJpc3MiOiJzb25hLWFwaSJ9.TeUktzu7TKwXcHj-jw5pLU5gwV1IHHlIlDklNEu9KB8"],
                 encoding: JSONEncoding.default
             )
             return response.data
@@ -82,7 +83,7 @@ class SonaApiService: SonaApiServiceProtocol {
             if let apiError = error as? ApiError {
                 throw  ApiErrorConverter.convert(apiError)
             }
-            throw error  
+            throw error
         }
     }
     

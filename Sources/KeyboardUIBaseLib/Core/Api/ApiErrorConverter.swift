@@ -60,6 +60,13 @@ public struct ApiErrorConverter {
                 suggestion: "Please check your internet connection and try again."
             )
             
+        case .unauthorized:
+            return AppError.custom(
+                code: "UNAUTHORIZED",
+                message: "Authentication required",
+                suggestion: "Please log in to continue."
+            )
+            
         case .unknown:
             return AppError.custom(
                 code: "UNKNOWN_ERROR",

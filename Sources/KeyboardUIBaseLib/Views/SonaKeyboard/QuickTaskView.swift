@@ -93,5 +93,15 @@ struct QuickTaskView: View {
         .environmentObject(container.sonaVM)
         .environmentObject(container.loadingVM)
         .environmentObject(container.toastMessageVM)
+        .onAppear {
+            TokenAppStorageService.shared.saveTokens(
+                accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGFjMmU4YmQwZWUxMzIwMDMzZTVjMTgiLCJpYXQiOjE3NTYzNDY2NjQsImV4cCI6MTc1Njk1MTQ2NCwiYXVkIjoic29uYS1hcHAiLCJpc3MiOiJzb25hLWFwaSJ9.IBjvrFbnDt9TsrpbLo1Vdv_9RitwYp8KiULDJ2vxY2M",
+                refreshToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGFjMmU4YmQwZWUxMzIwMDMzZTVjMTgiLCJpYXQiOjE3NTYxMTQ1NzEsImV4cCI6MTc1NjcxOTM3MSwiYXVkIjoic29uYS1hcHAiLCJpc3MiOiJzb25hLWFwaSJ9.2kS5aCSYIX1oP22W4QWQETG-ZbHD942Y2lkokdq_phs"
+            )
+            ApiConfiguration.shared.configure(
+                baseUrl: "https://pr0lkn29o9.execute-api.us-east-1.amazonaws.com",
+                refreshUrl: "https://pr0lkn29o9.execute-api.us-east-1.amazonaws.com/Prod/api/auth/refresh"
+            )
+        }
         
 }

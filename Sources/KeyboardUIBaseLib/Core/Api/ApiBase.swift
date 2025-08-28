@@ -35,13 +35,13 @@ struct ApiBase: Sendable {
     
     // Configuration
     private let session: Session
-    private let defaultTimeout: TimeInterval = 30.0
-    private let maxRetries: Int = 3
+    private var defaultTimeout: TimeInterval { ApiConfiguration.shared.defaultTimeout }
+    private var maxRetries: Int { ApiConfiguration.shared.maxRetries }
     
     private init() {
         let configuration = URLSessionConfiguration.default
-        configuration.timeoutIntervalForRequest = defaultTimeout
-        configuration.timeoutIntervalForResource = defaultTimeout * 2
+        configuration.timeoutIntervalForRequest = ApiConfiguration.shared.defaultTimeout
+        configuration.timeoutIntervalForResource = ApiConfiguration.shared.defaultTimeout * 2
         configuration.waitsForConnectivity = true
         
         self.session = Session(configuration: configuration)
@@ -72,7 +72,9 @@ struct ApiBase: Sendable {
                 .validate()
                 .responseData { response in
                     // Log cURL command after request is prepared
-                    ApiBaseUtil.logCurlCommand(for: request)
+                    if ApiConfiguration.shared.enableCurlLogging {
+                        ApiBaseUtil.logCurlCommand(for: request)
+                    }
                     
                     print("🌐 ApiBase: Received response for \(method.rawValue) request to: \(url) statusCode: \(response.response?.statusCode ?? 0)")
                     self.handleResponse(response: response, continuation: continuation)
@@ -84,26 +86,92 @@ struct ApiBase: Sendable {
         url: String,
         method: HTTPMethodEnum = .get,
         parameters: [String: any Any & Sendable]? = nil,
-        token: String,
-        tokenType: String = "Bearer",
         encoding: ParameterEncoding = URLEncoding.default
     ) async throws -> BaseResponse<T> {
         
+        // Get tokens from storage
+        guard let token = TokenAppStorageService.shared.getAccessToken() else {
+            throw ApiError.unauthorized
+        }
+        
+        let tokenType = TokenAppStorageService.shared.getTokenType()
+        
+        // First attempt with current token
         let authHeaders = HTTPHeaderBase.authHeader(token: token, type: tokenType)
         
-        return try await withCheckedThrowingContinuation { continuation in
-            let request = session.request(url, method: method.httpMethod, parameters: parameters, encoding: encoding, headers: authHeaders)
-            
-            request
-                .validate()
-                .responseData { response in
-                    // Log cURL command after request is prepared
-                    ApiBaseUtil.logCurlCommand(for: request)
-                    
-                    self.handleResponse(response: response, continuation: continuation)
+        do {
+            return try await withCheckedThrowingContinuation { continuation in
+                let request = session.request(url, method: method.httpMethod, parameters: parameters, encoding: encoding, headers: authHeaders)
+                
+                request
+                    .validate()
+                    .responseData { response in
+                        // Log cURL command after request is prepared
+                        if ApiConfiguration.shared.enableCurlLogging {
+                            ApiBaseUtil.logCurlCommand(for: request)
+                        }
+                        
+                        self.handleResponse(response: response, continuation: continuation)
+                    }
+            }
+        } catch {
+            // Check if refresh token handling is enabled and it's a 401 unauthorized error
+            if let refreshToken = TokenAppStorageService.shared.getRefreshToken(),
+               ApiConfiguration.shared.enableAutoRefresh,
+               ApiConfiguration.shared.hasRefreshUrl(),
+               let apiError = error as? ApiError,
+               case .http(let statusCode, _) = apiError,
+               statusCode == 401 {
+                
+                // Attempt to refresh token
+                let newToken = try await refreshAccessToken(refreshToken: refreshToken)
+                print("🔄 ApiBase: Token refreshed successfully \(newToken)")
+                
+                // Retry with new token (get updated token from storage after refresh)
+                guard let updatedToken = TokenAppStorageService.shared.getAccessToken() else {
+                    throw ApiError.unauthorized
                 }
+                
+                let newAuthHeaders = HTTPHeaderBase.authHeader(token: updatedToken, type: "Bearer")
+                
+                return try await withCheckedThrowingContinuation { continuation in
+                    let request = session.request(url, method: method.httpMethod, parameters: parameters, encoding: encoding, headers: newAuthHeaders)
+                    
+                    request
+                        .validate()
+                        .responseData { response in
+                            // Log cURL command after request is prepared
+                            if ApiConfiguration.shared.enableCurlLogging {
+                                ApiBaseUtil.logCurlCommand(for: request)
+                            }
+                            
+                            self.handleResponse(response: response, continuation: continuation)
+                        }
+                }
+            }
+            
+            // Re-throw if not a 401 error or refresh not enabled
+            throw error
         }
     }
+    
+    func refreshAccessToken(refreshToken: String? = nil) async throws -> String {
+        let tokenToUse = refreshToken ?? TokenAppStorageService.shared.getRefreshToken()
+        
+        guard let finalRefreshToken = tokenToUse else {
+            throw ApiError.unauthorized
+        }
+        
+        guard ApiConfiguration.shared.hasRefreshUrl() else {
+            throw ApiError.invalidURL
+        }
+        
+        return try await TokenRefreshManager.shared.refreshAccessToken(
+            refreshToken: finalRefreshToken,
+            refreshUrl: ApiConfiguration.shared.refreshUrl
+        )
+    }
+    
     // MARK: - Private Helper Methods
     
     private func handleResponse<T: Decodable>(
