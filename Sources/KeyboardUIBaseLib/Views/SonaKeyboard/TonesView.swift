@@ -6,10 +6,12 @@
 //
 
 import SwiftUI
+import Combine
 
 struct TonesView: View {
     @EnvironmentObject private var sonaVM: SonaViewModel
     @EnvironmentObject private var toastMessageVM: ToastMessageManager
+    @StateObject private var loadingVM = LoadingViewModel()
     
     private func isSelectedTone(_ tone: String) -> Bool {
         return sonaVM.selectedTone == tone
@@ -40,11 +42,14 @@ struct TonesView: View {
                 selectedPersona = persona
             }
             print("Selected tone: \(selectedTone), persona: \(selectedPersona)")
+            loadingVM.startLoading()
             let params = RewriteRequestParam(message: input, tone: selectedTone, persona: selectedPersona)
             let data =   try await sonaVM.rewriteText(params)
+            loadingVM.stopLoading()
             print("Rewritten text: \(data)")
         }catch {
             print("Error rewriting text: \(error)")
+            loadingVM.stopLoading()
             if let appError = error as? AppError {
                 toastMessageVM.showError("\(appError.message)")
             } else {
@@ -100,6 +105,7 @@ struct TonesView: View {
                                     await onSelect(type: .tone(option))
                                 }
                             }.isSelected(isSelectedTone(option))
+                                .loading(isSelectedTone(option) && loadingVM.isLoading)
                                 .small()
                         }
                     }
@@ -114,6 +120,7 @@ struct TonesView: View {
                                     await onSelect(type: .persona(option))
                                 }
                             }.isSelected(isSelectedPersona(option))
+                                .loading(isSelectedPersona(option) && loadingVM.isLoading)
                         }
                     }
                     .padding(.horizontal, 25)
@@ -123,14 +130,15 @@ struct TonesView: View {
             leftBlurView
             rightBlurView
         }.frame(height: 95)
-            //.displayToastMessage(toastMessageVM)
+            .allowsHitTesting(!loadingVM.isLoading)
+        //.displayToastMessage(toastMessageVM)
     }
 }
 
 #Preview {
     @Previewable @StateObject var container = SonaAppContainer(container: DIContainer.shared)
     TonesView()
-        .environmentObject(container.sonaVM)
-        .environmentObject(container.loadingVM)
-        .environmentObject(container.toastMessageVM)
+        .setupEnvironmentObjects(container)
+        .setupApiConfigPreview()
+        .setupTokenApiPreview()
 }

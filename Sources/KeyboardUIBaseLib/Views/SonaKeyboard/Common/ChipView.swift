@@ -44,17 +44,20 @@ struct ChipView: View {
   private let title: String
     private var isSelected: Bool
     private var isDisabled: Bool
+    private var isLoading: Bool
     private var size: ChipSize = .normal
     private var action: () -> Void
     
     init(_ title: String,
             isSelected: Bool = true,
             isDisabled: Bool = false,
+            isLoading: Bool = false,
             size: ChipSize = .normal,
          action: @escaping () -> Void) {
         self.title = title
         self.isSelected = isSelected
         self.isDisabled = isDisabled
+        self.isLoading = isLoading
         self.size = size
         self.action = action
     }
@@ -62,14 +65,31 @@ struct ChipView: View {
     var body: some View {
         WTextButton(title, action: action)
             .buttonStyle(.contained)
-            .foregroundColor((isDisabled == true) ? .black.opacity(0.3) : (isSelected ? .white : .black))
-            .backgroundColor((isDisabled == true) ? Color(hex: "#F6F5F4") : (isSelected ? .black : Color(hex: "#F6F5F4")))
+            .foregroundColor((isDisabled == true || isLoading == true) ? .black.opacity(0.3) : (isSelected ? .white : .black))
+            .backgroundColor((isDisabled == true || isLoading == true) ? Color(hex: "#F6F5F4") : (isSelected ? .black : Color(hex: "#F6F5F4")))
             .customFont(.interMedium, size: size.fontSize)
             .height(size.height)
             .cornerRadius(106)
             .horizontalPadding(size.horizontalPadding)
             .verticalPadding(size.verticalPadding)
-            .disable(isDisabled)
+            .disable(isDisabled || isLoading)
+            .overlay(
+                // Show activity indicator when loading
+                Group {
+                    if isLoading {
+                        RoundedRectangle(cornerRadius: 106)
+                            .fill(isSelected ? .black : Color(hex: "#F6F5F4"))
+                            .frame(height: size.height)
+                            .overlay(
+                                ActivityIndicator(
+                                    size: size == .small ? 16 : 20,
+                                    color: isSelected ? .white : .black,
+                                    style: .dots
+                                )
+                            )
+                    }
+                }
+            )
     }
 }
 
@@ -84,6 +104,12 @@ extension ChipView {
     func disable(_ isDisabled: Bool = true) -> ChipView {
         var copy = self
         copy.isDisabled = isDisabled
+        return copy
+    }
+    
+    func loading(_ isLoading: Bool) -> ChipView {
+        var copy = self
+        copy.isLoading = isLoading
         return copy
     }
     
@@ -176,6 +202,21 @@ extension ChipView {
                         }
                     }
                     
+                    // Loading states
+                    HStack(spacing: 12) {
+                        ChipView("Loading Selected", isLoading: true) {
+                            print("Loading selected tapped")
+                        }
+                        
+                        ChipView("Loading Unselected", isSelected: false, isLoading: true) {
+                            print("Loading unselected tapped")
+                        }
+                        
+                        ChipView("Loading Small", isLoading: true, size: .small) {
+                            print("Loading small tapped")
+                        }
+                    }
+                    
                     // Unselected states  
                     HStack(spacing: 12) {
                         ChipView("Unselected Normal", isSelected: false) {
@@ -198,7 +239,7 @@ extension ChipView {
                         }
                     }
                     
-                    Text("Various state combinations")
+                    Text("Various state combinations including loading")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -227,9 +268,14 @@ extension ChipView {
                             print("Chained small tapped")
                         }
                         .small()
+                        
+                        ChipView("Chain Loading") {
+                            print("Chained loading tapped")
+                        }
+                        .loading(true)
                     }
                     
-                    Text("Using chaining methods")
+                    Text("Using chaining methods including loading")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -268,6 +314,20 @@ extension ChipView {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
+            }
+            
+            Divider()
+            
+            // Interactive Loading Demo
+            VStack(spacing: 16) {
+                Text("Interactive Loading Demo")
+                    .font(.headline)
+                
+                LoadingChipDemo()
+                
+                Text("Tap chip to see loading state")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
             
             Divider()
@@ -317,5 +377,43 @@ extension ChipView {
             }
         }
         .padding()
+    }
+}
+
+struct LoadingChipDemo: View {
+    @State private var isLoading = false
+    @State private var isSelected = true
+    
+    var body: some View {
+        VStack(spacing: 15) {
+            HStack(spacing: 12) {
+                ChipView("Process Data", isSelected: isSelected, isLoading: isLoading) {
+                    isLoading = true
+                    
+                    // Simulate API call
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                        isLoading = false
+                    }
+                }
+                
+                ChipView("Small Process", isSelected: false, isLoading: isLoading, size: .small) {
+                    isLoading = true
+                    
+                    // Simulate API call
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        isLoading = false
+                    }
+                }
+            }
+            
+            Button("Toggle Selection") {
+                isSelected.toggle()
+            }
+            .font(.caption)
+            
+            Text(isLoading ? "Processing..." : "Ready to process")
+                .font(.caption)
+                .foregroundColor(.gray)
+        }
     }
 }

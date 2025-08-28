@@ -9,14 +9,19 @@ import SwiftUI
 
 struct QuickTaskView: View {
     @EnvironmentObject private var sonaVM: SonaViewModel
-    @EnvironmentObject private var loadingVM: LoadingViewModel
     @EnvironmentObject private var toastMessageVM: ToastMessageManager
+    
+    @StateObject private var loadingVM = LoadingViewModel()
+    
     
     private func onRewrite() async {
         do {
+            loadingVM.startLoading()
             let param = ProofreadRequestParam(message: sonaVM.input)
-            let data = try await sonaVM.proofreadText(param)
+            _ = try await sonaVM.proofreadText(param)
+            loadingVM.stopLoading()
         }catch {
+            loadingVM.stopLoading()
             if let appError = error as? AppError {
                 toastMessageVM.showError("\(appError.message)")
             } else {
@@ -66,7 +71,7 @@ struct QuickTaskView: View {
             print("Forward action")
         }.iconSize(width: 14.41, height: 18.91)
             .loading(false)
-            .disabled(false)
+            .disabled(true)
     }
     
     
@@ -83,6 +88,7 @@ struct QuickTaskView: View {
                 forwardButton
             }
         }
+        .allowsHitTesting(!loadingVM.isLoading)
         //.displayToastMessage(toastMessageVM)
     }
 }

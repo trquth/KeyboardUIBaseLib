@@ -26,10 +26,9 @@ final class SonaViewModel: ObservableObject {
         do {
             // Validate input data using RewriteValidator
             try RewriteValidator.validate(data)
-            
-            //loadingVM.startLoading()
+            loadingVM.startLoading()
             let data =  try await sonaApiService.rewriteApi(data)
-            //loadingVM.stopLoading()
+            loadingVM.stopLoading()
             return data
         } catch {
             loadingVM.stopLoading()

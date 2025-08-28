@@ -10,6 +10,7 @@ import Alamofire
 
 struct SonaKeyboardView: View {
     @EnvironmentObject private var toastMessageVM: ToastMessageManager
+    @EnvironmentObject private var loadingVM: LoadingViewModel
     
     @State private var showSupportedLanguages = false
     @State private var showDeleteConfirmation = false
@@ -22,7 +23,8 @@ struct SonaKeyboardView: View {
                 //suggestionInput
                 WVSpacer(43)
                 TonesView()
-            }
+            }.allowsHitTesting(!loadingVM.isLoading)
+
             
             // Overlay SupportedLanguagesView
             if showSupportedLanguages {
@@ -56,6 +58,7 @@ struct SonaKeyboardView: View {
         }
         .frame(height: 225)
         .displayToastMessage(toastMessageVM)
+        
     }
 }
 
