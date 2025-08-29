@@ -30,6 +30,10 @@ extension View {
 
     }
     
+    func setupKeyboardVMEnvironmentObjectPreview(_ currentText: String) -> some View {
+        self.environmentObject(KeyboardInputVM(inputText: currentText))
+    }
+    
     func setupApiConfigPreview () -> some View {
         self.onAppear {
             ApiConfiguration.shared.configure(

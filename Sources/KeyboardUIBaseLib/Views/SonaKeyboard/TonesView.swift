@@ -10,6 +10,7 @@ import Combine
 
 struct TonesView: View {
     @EnvironmentObject private var sonaVM: SonaViewModel
+    @EnvironmentObject private var keyboardVM: KeyboardInputVM
     @EnvironmentObject private var toastMessageVM: ToastMessageManager
     @EnvironmentObject private var sharedDataVM: SharedDataViewModel
     
@@ -30,7 +31,7 @@ struct TonesView: View {
     
     private func onSelect(type: SelectionType) async{
         do {
-            let input = sonaVM.input
+            let input = keyboardVM.inputText
             var selectedTone =  !sonaVM.selectedTone.isEmpty ? sonaVM.selectedTone : DEFAULT_SONA_TONE
             var selectedPersona = !sonaVM.selectedPersona.isEmpty ? sonaVM.selectedPersona : DEFAULT_SONA_PERSONA
             
@@ -46,10 +47,11 @@ struct TonesView: View {
             print("Selected tone: \(selectedTone), persona: \(selectedPersona)")
             loadingVM.startLoading()
             let params = RewriteRequestParam(message: input, tone: selectedTone, persona: selectedPersona)
-            let data =   try await sonaVM.rewriteText(params)
+            let data = try await sonaVM.rewriteText(params)
             let translatedText = data.output
             if !translatedText.isEmpty {
                 sharedDataVM.setTranslatedText(translatedText)
+                keyboardVM.setInputText(translatedText)
             }
             loadingVM.stopLoading()
             print("Rewritten text: \(data)")
@@ -142,9 +144,11 @@ struct TonesView: View {
 }
 
 #Preview {
-    @Previewable @StateObject var container = SonaAppContainer(container: DIContainer.shared)
+    @Previewable var container = SonaAppContainer(container: DIContainer.shared)
+    
     TonesView()
-        .setupEnvironmentObjects(container)
+        .setupKeyboardVMEnvironmentObjectPreview("I am Thien")
+        .setupEnvironmentObjectsPreview(container)
         .setupApiConfigPreview()
         .setupTokenApiPreview()
 }

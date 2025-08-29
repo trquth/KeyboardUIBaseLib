@@ -28,6 +28,11 @@ public class KeyboardInputVM: ObservableObject {
         self.lastWordTyped = lastWordTyped
     }
     
+    func setInputText(_ text: String) {
+        inputText = text
+        updateLastWordTyped()
+    }
+    
     func clearInputText() {
         if !inputText.isEmpty {
             inputText = ""

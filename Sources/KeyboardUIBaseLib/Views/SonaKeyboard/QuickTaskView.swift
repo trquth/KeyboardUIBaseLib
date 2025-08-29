@@ -9,6 +9,7 @@ import SwiftUI
 
 struct QuickTaskView: View {
     @EnvironmentObject private var sonaVM: SonaViewModel
+    @EnvironmentObject private var keyboardVM: KeyboardInputVM
     @EnvironmentObject private var toastMessageVM: ToastMessageManager
     @EnvironmentObject private var sharedDataVM: SharedDataViewModel
     
@@ -18,10 +19,12 @@ struct QuickTaskView: View {
     private func onRewrite() async {
         do {
             loadingVM.startLoading()
-            let param = ProofreadRequestParam(message: sonaVM.input)
+            let param = ProofreadRequestParam(message: keyboardVM.inputText)
             let data = try await sonaVM.proofreadText(param)
-            if !data.output.isEmpty {
-                sharedDataVM.setTranslatedText(data.output)
+            let translatedText = data.output
+            if !translatedText.isEmpty {
+                sharedDataVM.setTranslatedText(translatedText)
+                keyboardVM.setInputText(translatedText)
             }
             loadingVM.stopLoading()
         }catch {
@@ -98,9 +101,12 @@ struct QuickTaskView: View {
 }
 
 #Preview {
-    @Previewable @StateObject var container = SonaAppContainer(container: DIContainer.shared)
+    @Previewable var container = SonaAppContainer(container: DIContainer.shared)
     QuickTaskView()
+        .setupKeyboardVMEnvironmentObjectPreview("I am Thien")
+        .setupCommonEnvironmentObjects(container)
         .setupEnvironmentObjectsPreview(container)
+   
         .setupTokenApiPreview()
         .setupApiConfigPreview()
 }

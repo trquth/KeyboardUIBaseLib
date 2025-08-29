@@ -12,12 +12,12 @@ final class SonaViewModel: ObservableObject {
     private let sonaApiService: SonaApiServiceProtocol
     private let loadingVM: LoadingViewModel
     
-    @Published var input:String = "Hello I im Binhdadads"
+    //@Published var input:String = "Hello I im Binhdadads"
     @Published private(set) var selectedTone: String = "" // Default tone
     @Published private(set) var selectedPersona: String = "" //Default persona
     
     
-    init(sonaApiService: SonaApiServiceProtocol, loadingVM: LoadingViewModel) {
+    init(sonaApiService: SonaApiServiceProtocol,loadingVM: LoadingViewModel) {
         self.sonaApiService = sonaApiService
         self.loadingVM = loadingVM
     }

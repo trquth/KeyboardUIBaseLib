@@ -14,4 +14,5 @@ final class DIContainer: Sendable{
     lazy var loadingVM : LoadingViewModel = LoadingViewModel()
     lazy var toastMessageVM: ToastMessageManager = ToastMessageManager()
     lazy var sharedDataVM: SharedDataViewModel = SharedDataViewModel()
+    lazy var keyboardVM: KeyboardInputVM = KeyboardInputVM(inputText: "")
 }

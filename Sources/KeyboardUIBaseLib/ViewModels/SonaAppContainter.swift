@@ -16,12 +16,12 @@ class SonaAppContainer: ObservableObject {
     
     init(container: DIContainer) {
         let loadingVM = container.loadingVM
+        self.keyboardVM = container.keyboardVM
         self.sonaVM = SonaViewModel(sonaApiService: container.sonaAPIService,
-                             loadingVM: loadingVM)
+                                    loadingVM: loadingVM)
         self.loadingVM = loadingVM
         self.toastMessageVM = container.toastMessageVM
         self.sharedDataVM = container.sharedDataVM
-        self.keyboardVM = KeyboardInputVM(inputText: "")
     }
 }
 

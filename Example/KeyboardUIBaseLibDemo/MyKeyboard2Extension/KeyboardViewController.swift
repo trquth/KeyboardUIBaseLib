@@ -107,7 +107,8 @@ class KeyboardViewController: UIInputViewController {
             print("📝 Translated text is empty, ignoring")
             return
         }
-        
+        //Clear text before inserting translated text
+        clearAllText()
         insertText(translatedText)
         print("✅ Text replacement completed")
         
@@ -116,7 +117,7 @@ class KeyboardViewController: UIInputViewController {
             self.sharedDataVM.clearTranslatedText()
         }
     }
-    
+
     // Method to manually trigger text update for SharedDataViewModel
     func updateSharedDataCurrentText() {
         let currentContext = getCurrentContext() ?? ""
@@ -208,6 +209,58 @@ class KeyboardViewController: UIInputViewController {
     private func handleDeleteKey() {
         textDocumentProxy.deleteBackward()
     }
+    
+    private func deleteAllText() {
+            // Get all text before and after cursor
+            let contextBefore = textDocumentProxy.documentContextBeforeInput ?? ""
+            let contextAfter = textDocumentProxy.documentContextAfterInput ?? ""
+            
+            // Delete all text before cursor
+            for _ in contextBefore {
+                textDocumentProxy.deleteBackward()
+            }
+            
+            // Delete all text after cursor
+            for _ in contextAfter {
+                textDocumentProxy.adjustTextPosition(byCharacterOffset: 1)
+                       textDocumentProxy.deleteBackward()
+               // textDocumentProxy.deleteForward()
+            }
+            
+            print("🗑️ KeyboardViewController: All text deleted")
+        }
+        
+        private func deleteAllTextEfficient() {
+            // Alternative efficient method using text selection
+            // Move cursor to beginning of document
+            let contextBefore = textDocumentProxy.documentContextBeforeInput ?? ""
+            let contextAfter = textDocumentProxy.documentContextAfterInput ?? ""
+            let totalLength = contextBefore.count + contextAfter.count
+            
+            // If there's no text, nothing to delete
+            guard totalLength > 0 else {
+                print("🗑️ KeyboardViewController: No text to delete")
+                return
+            }
+            
+            // Move cursor to the beginning
+            textDocumentProxy.adjustTextPosition(byCharacterOffset: -contextBefore.count)
+            
+            // Select all text and delete
+            for _ in 0..<totalLength {
+                textDocumentProxy.adjustTextPosition(byCharacterOffset: 1)
+                       textDocumentProxy.deleteBackward()
+                //textDocumentProxy.deleteForward()
+            }
+            
+            print("🗑️ KeyboardViewController: All text deleted efficiently")
+        }
+        
+        // Public method for external calls
+        public func clearAllText() {
+            deleteAllTextEfficient()
+        }
+        
     
     private func handleReturnKey() {
         // Get the current text context before inserting newline
@@ -375,5 +428,24 @@ class KeyboardViewController: UIInputViewController {
             // Clear shared data when no current input
             //sharedDataVM.setCurrentText("")
         }
+    }
+    
+    // Get the complete text in the text field
+    public func getAllText() -> String {
+        let beforeText = textDocumentProxy.documentContextBeforeInput ?? ""
+        let afterText = textDocumentProxy.documentContextAfterInput ?? ""
+        return beforeText + afterText
+    }
+    
+    // Get text length
+    public func getTextLength() -> Int {
+        let beforeText = textDocumentProxy.documentContextBeforeInput ?? ""
+        let afterText = textDocumentProxy.documentContextAfterInput ?? ""
+        return beforeText.count + afterText.count
+    }
+    
+    // Check if text field is empty
+    public func isTextFieldEmpty() -> Bool {
+        return getTextLength() == 0
     }
 }
