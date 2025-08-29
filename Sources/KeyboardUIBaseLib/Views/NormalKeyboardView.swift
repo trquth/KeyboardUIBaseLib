@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-struct CustomKeyboardV2View: View {
+struct NormalKeyboardView: View {
     @State private var isShiftActive = false
     @State private var isCapsLockActive = false
     @State private var currentKeyboardMode: KeyboardLayout.LayoutType = .letters
@@ -248,7 +248,7 @@ struct CustomKeyboardV2View: View {
     @Previewable @State var inputText: String = ""
     VStack(alignment:.center) {
         WText("::: INPUT ::: \n\(inputText)")
-        CustomKeyboardV2View {
+        NormalKeyboardView {
             key in inputText += key
         }.keyboardBorderPreview()
         
@@ -260,7 +260,7 @@ struct CustomKeyboardV2View: View {
         Text("Keyboard with Callback")
             .font(.headline)
         
-        CustomKeyboardV2View { key in
+        NormalKeyboardView { key in
             print("📝 Text key pressed: \(key)")
         }
     }
@@ -271,13 +271,13 @@ struct CustomKeyboardV2View: View {
     VStack(spacing: 20) {
         Text("Letters Mode")
             .font(.headline)
-        CustomKeyboardV2View { key in
+        NormalKeyboardView { key in
             print("Key pressed: \(key)")
         }
         
         Text("Numbers Mode")
             .font(.headline)
-        CustomKeyboardV2View { key in
+        NormalKeyboardView { key in
             print("Key pressed: \(key)")
         }
             .onAppear {
@@ -286,7 +286,7 @@ struct CustomKeyboardV2View: View {
         
         Text("Symbols Mode")
             .font(.headline) 
-        CustomKeyboardV2View { key in
+        NormalKeyboardView { key in
             print("Key pressed: \(key)")
         }
     }

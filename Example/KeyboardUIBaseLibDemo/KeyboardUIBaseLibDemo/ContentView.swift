@@ -11,16 +11,8 @@ import KeyboardUIBaseLib
 struct ContentView: View {
     var body: some View {
         VStack {
-            Spacer()
-                
-            MainView(
-                onKeyPressed: { key in
-                    print("⌨️ Key pressed: '\(key)'")
-                },
-                onTextSubmitted: { text in
-                    print("✅ Text submitted: '\(text)'")
-                }
-            )
+            Spacer()    
+            KeyboardApp()
         }
     }
 }

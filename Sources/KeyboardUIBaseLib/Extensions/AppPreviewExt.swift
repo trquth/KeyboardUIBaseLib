@@ -24,6 +24,12 @@ extension View {
             .environmentObject(container.sharedDataVM)
     }
     
+    func setupNormalKeyboardEnvironmentObjectsPreview(_ container: SonaAppContainer) -> some View {
+        self.environmentObject(container.keyboardVM)
+            .environmentObject(container.sharedDataVM)
+
+    }
+    
     func setupApiConfigPreview () -> some View {
         self.onAppear {
             ApiConfiguration.shared.configure(

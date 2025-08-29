@@ -23,6 +23,10 @@ public class KeyboardInputVM: ObservableObject {
         self.inputText = inputText
     }
     
+    public init(currentTypingInput: String) {
+        self.currentTypingInput = currentTypingInput
+    }
+    
     func clearInputText() {
         if !inputText.isEmpty {
             inputText = ""

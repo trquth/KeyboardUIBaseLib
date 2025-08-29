@@ -9,21 +9,14 @@ import SwiftUI
 
 struct EmojiKeyboardView: View {
     // Callback for emoji selection
+    @Binding var currentKeyboard: KeyboardType
+    
     let onEmojiSelected: ((String) -> Void)?
-    let onBackToKeyboard: (() -> Void)?
     
     @State private var selectedCategory: EmojiCategory = .recent
     @State private var recentEmojis: [String] = [] // Start empty to show placeholder
     
     private let gridColumns = Array(repeating: GridItem(.flexible(), spacing: 5), count: 8)
-    
-    init(
-        onEmojiSelected: ((String) -> Void)? = nil,
-        onBackToKeyboard: (() -> Void)? = nil
-    ) {
-        self.onEmojiSelected = onEmojiSelected
-        self.onBackToKeyboard = onBackToKeyboard
-    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -36,14 +29,14 @@ struct EmojiKeyboardView: View {
                             }
                         }
                         .padding(.horizontal, 8)
-                       .padding(.top, 8)
-                       .padding(.bottom, 5)
+                        .padding(.top, 8)
+                        .padding(.bottom, 5)
                     }
                     .background(.white)
                     .tag(category)
                 }
             }
-            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))        
+            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             categorySection()
         }
     }
@@ -52,7 +45,7 @@ struct EmojiKeyboardView: View {
         categorySelector()
             .padding(.horizontal, 8)
             .padding(.vertical, 8)
-            .background(Color(hex: "#F3F4F6"))    
+            .background(Color(hex: "#F3F4F6"))
     }
     
     private func categorySelector() -> some View {
@@ -69,7 +62,9 @@ struct EmojiKeyboardView: View {
     
     private func backToKeyboardButton() -> some View {
         WTextButton("ABC") {
-            onBackToKeyboard?()
+            withAnimation(.easeInOut(duration: 0.3)) {
+                currentKeyboard = .text
+            }
         }
         .buttonStyle(.minimal)
         .buttonSize(width: 36, height: 36)
@@ -172,13 +167,9 @@ struct EmojiButtonStyle: ButtonStyle {
 }
 
 #Preview {
-    EmojiKeyboardView(
-        onEmojiSelected: { emoji in
-            print("Selected emoji: \(emoji)")
-        },
-        onBackToKeyboard: {
-            print("Back to keyboard")
-        }
-    ).frame(height:KeyboardConfiguration.KEYBOARD_HEIGHT)
-        .border(.yellow, width: 1)
+    EmojiKeyboardView(currentKeyboard:.constant(.emoji)){ emoji in
+        print("Selected emoji: \(emoji)")
+    }
+    .frame(height:KeyboardConfiguration.KEYBOARD_HEIGHT)
+    .border(.yellow, width: 1)
 }

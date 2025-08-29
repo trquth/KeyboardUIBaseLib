@@ -16,10 +16,6 @@ class KeyboardViewController: UIInputViewController {
     
     var heightConstraint: NSLayoutConstraint?
     
-    // Text Replacement View Model
-    let keyboardInputVM = KeyboardInputVM()
-    let textReplacementsVM = TextReplacementVM()
-    
     private var cancellables = Set<AnyCancellable>()
     private let sharedDataVM = SharedDataViewModel()
     
@@ -34,23 +30,11 @@ class KeyboardViewController: UIInputViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        let mainView = MainView(
-            onKeyPressed: { [weak self] key in
-                self?.handleKeyPressed(key)
-                self?.updateCurrentTypingInput()
-            },
-            onTextSubmitted: { [weak self] text in
-                self?.handleTextSubmitted(text)
-            },
-            onTextReplacementSelected: { [weak self] replacement in
-                self?.handleTextReplacementSelected(replacement)
-            }
-        ).environmentObject(keyboardInputVM)
-            .environmentObject(textReplacementsVM)
+        
+        let keyboardApp = KeyboardApp()
             .environmentObject(sharedDataVM)
         
-        let hosting = UIHostingController(rootView:mainView)
+        let hosting = UIHostingController(rootView:keyboardApp)
         addChild(hosting)
         hosting.view.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(hosting.view)
@@ -102,6 +86,17 @@ class KeyboardViewController: UIInputViewController {
             .sink { [weak self] translatedText in
                 self?.handleTranslatedTextChanged(translatedText)
             }.store(in: &cancellables)
+        
+        sharedDataVM.$pressedKey.sink { [weak self] key in
+            guard let key = key else { return }
+            self?.handleKeyPressed(key)
+            self?.updateCurrentTypingInput()
+        }.store(in: &cancellables)
+        
+        sharedDataVM.$selectedTextReplacement.sink { [weak self] replacement in
+            guard let replacement = replacement else { return }
+            self?.handleTextReplacementSelected(replacement)
+        }.store(in: &cancellables)
     }
     
     private func handleTranslatedTextChanged(_ translatedText: String) {
@@ -125,12 +120,11 @@ class KeyboardViewController: UIInputViewController {
     // Method to manually trigger text update for SharedDataViewModel
     func updateSharedDataCurrentText() {
         let currentContext = getCurrentContext() ?? ""
-        sharedDataVM.setCurrentText(currentContext)
+        //sharedDataVM.setCurrentText(currentContext)
         print("📝 Updated shared data current text: '\(currentContext)'")
     }
     
     // MARK: - Keyboard Configuration
-    
     private func setupKeyboardAppearance() {
         // Configure the keyboard's visual appearance
         view.backgroundColor = UIColor.systemBackground
@@ -180,16 +174,16 @@ class KeyboardViewController: UIInputViewController {
             handleReturnKey()
         case .space:                // Handle both text and actual space
             handleSpaceKey()
-//        case "caps_lock":
-//            handleCapsLockKey()
-//        case "next_keyboard", "globe":
-//            advanceToNextInputMode()
-//        case "dismiss", "hide_keyboard":
-//            handleDismissKeyboard()
+            //        case "caps_lock":
+            //            handleCapsLockKey()
+            //        case "next_keyboard", "globe":
+            //            advanceToNextInputMode()
+            //        case "dismiss", "hide_keyboard":
+            //            handleDismissKeyboard()
         default:
             insertText(data.value)
         }
-      
+        
     }
     
     private func handleTextSubmitted(_ text: String) {
@@ -198,7 +192,7 @@ class KeyboardViewController: UIInputViewController {
         print("📊 Text length: \(text.count) characters")
         
         // Clear text replacement suggestions after submit
-        textReplacementsVM.textReplacements = []
+        //textReplacementsVM.textReplacements = []
         
         // Additional submit logic can be added here:
         // - Analytics tracking
@@ -260,11 +254,11 @@ class KeyboardViewController: UIInputViewController {
     private func handleSpaceKey() {
         insertText(" ")
     }
-
+    
     private func insertText(_ text: String) {
         textDocumentProxy.insertText(text)
     }
-        
+    
     // MARK: - Keyboard Utilities
     
     private func requestKeyboardDismissal() {
@@ -339,8 +333,9 @@ class KeyboardViewController: UIInputViewController {
     private func processSupplementaryLexicon(_ lexicon : UILexicon? = nil) {
         guard let lexicon = lexicon else { return }
         
+        
         // Clear existing replacements
-        textReplacementsVM.textReplacements.removeAll()
+        sharedDataVM.clearTextReplacements()
         
         var textReplacements = [TextReplacement]()
         // Process lexicon entries
@@ -349,7 +344,7 @@ class KeyboardViewController: UIInputViewController {
             
             //print("🔄 Text replacement: '\(entry.userInput)' -> '\(entry.documentText)'")
         }
-        textReplacementsVM.textReplacements = textReplacements
+        sharedDataVM.setTextReplacements(textReplacements)
     }
     
     private func handleTextReplacementSelected(_ replacement: TextReplacement) {
@@ -369,17 +364,16 @@ class KeyboardViewController: UIInputViewController {
     
     private func updateCurrentTypingInput() {
         if let lastWord = getCurrentWord() {
-            keyboardInputVM.currentTypingInput = lastWord
+            sharedDataVM.setCurrentTypingInput(lastWord)
             print("Last word : \(lastWord)")  // Update current typing input
             
             // Also update the shared data with current context
             let currentContext = getCurrentContext() ?? ""
-            sharedDataVM.setCurrentText(currentContext)
+            //sharedDataVM.setCurrentText(currentContext)
         }else {
-            keyboardInputVM.resetCurrentTypingInput()
-            
+            sharedDataVM.clearTranslatedText()
             // Clear shared data when no current input
-            sharedDataVM.setCurrentText("")
+            //sharedDataVM.setCurrentText("")
         }
     }
 }

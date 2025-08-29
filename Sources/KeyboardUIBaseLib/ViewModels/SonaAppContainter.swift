@@ -12,6 +12,7 @@ class SonaAppContainer: ObservableObject {
     var loadingVM: LoadingViewModel
     var toastMessageVM: ToastMessageManager
     var sharedDataVM: SharedDataViewModel
+    var keyboardVM: KeyboardInputVM
     
     init(container: DIContainer) {
         let loadingVM = container.loadingVM
@@ -20,6 +21,7 @@ class SonaAppContainer: ObservableObject {
         self.loadingVM = loadingVM
         self.toastMessageVM = container.toastMessageVM
         self.sharedDataVM = container.sharedDataVM
+        self.keyboardVM = KeyboardInputVM(inputText: "")
     }
 }
 

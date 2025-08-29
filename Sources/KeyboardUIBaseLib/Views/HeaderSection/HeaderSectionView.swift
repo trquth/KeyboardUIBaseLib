@@ -9,26 +9,33 @@ import SwiftUI
 
 struct HeaderSectionView: View {
     @EnvironmentObject private var keyboardInputVM: KeyboardInputVM
-    @EnvironmentObject private var textReplacementVM: TextReplacementVM
+    @EnvironmentObject private var sharedDataVM: SharedDataViewModel
     
     // Text replacement suggestions
     let onTextReplacementSelected: ((TextReplacement) -> Void)?
     
-    init(
-        onTextReplacementSelected: ((TextReplacement) -> Void)? = nil
-    ) {
-        self.onTextReplacementSelected = onTextReplacementSelected
+    private  func findTextReplacements(for shortcut: String) -> [TextReplacement]{
+        let textReplacements = sharedDataVM.textReplacements
+        if shortcut.isEmpty || textReplacements.isEmpty {
+            return []
+        }
+        // Filter text replacements based on the shortcut
+        let filtered = textReplacements.filter { replacement in
+            replacement.shortcut.lowercased().hasPrefix(shortcut.lowercased())
+        }
+        
+        return Array(filtered.prefix(5)) // Show up to 5 matching suggestions
     }
     
     // Filter suggestions based on current input
     private var filteredSuggestions: [TextReplacement] {
-        textReplacementVM.findTextReplacements(for:keyboardInputVM.currentTypingInput)
+        findTextReplacements(for:keyboardInputVM.currentTypingInput)
     }
     
     private var filteredSuggestionsCount: Int {
         return filteredSuggestions.count
     }
-        
+    
     var body: some View {
         HStack {
             ScrollView(.horizontal, showsIndicators: false) {
@@ -51,11 +58,17 @@ struct HeaderSectionView: View {
                         }
                     }
                 }
-            }   
+            }
             WSpacer()
-            SwitchKeyboardButton()
+            SwitchKeyboardButton{
+                withAnimation(.easeInOut(duration: 0.3)) {              keyboardInputVM.switchKeyboard(keyboardInputVM.currentKeyboard)
+                }
+            }
         }
         .padding(.horizontal, 16)
+        .onAppear {
+            print("Typing input change ::::: \(sharedDataVM.currentTypingInput)")
+        }
     }
 }
 
@@ -66,12 +79,9 @@ struct HeaderSectionView: View {
         TextReplacement(shortcut: "lol", replacement: "😂"),
         TextReplacement(shortcut: "addr", replacement: "123 Main Street, City, State 12345")
     ]
+    HeaderSectionView {
+        print("Selected replacement: \($0.replacement)")
+    }.environmentObject(KeyboardInputVM(currentTypingInput: "lol"))
+            .environmentObject(SharedDataViewModel(textReplacements: sampleReplacements))
     
-    HeaderSectionView(
-        onTextReplacementSelected: { replacement in
-            print("Selected: \(replacement.shortcut) -> \(replacement.replacement)")
-        }
-    ).environmentObject(KeyboardInputVM(inputText: "lol"))
-        .environmentObject(TextReplacementVM(textReplacements: sampleReplacements))
-        
 }
