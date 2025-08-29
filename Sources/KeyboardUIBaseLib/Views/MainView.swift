@@ -9,13 +9,9 @@ import SwiftUI
 
 struct MainView: View {
     @EnvironmentObject private var keyboardInputVM: KeyboardInputVM
-    @EnvironmentObject private var sharedDataVM: SharedDataViewModel
     
     private var header : some View {
-        HeaderSectionView { replacement in
-            sharedDataVM.setSelectedTextReplacement(replacement)
-            sharedDataVM.onPressKey(KeyItem(value: KeyboardLayout.SpecialKey.space.rawValue, key: KeyboardLayout.SpecialKey.space))
-        }
+        HeaderSectionView()
     }
     
     @ViewBuilder
@@ -52,7 +48,7 @@ extension View {
 }
 
 #Preview(traits: .sizeThatFitsLayout) {
-    @Previewable @StateObject var keyboardInputVM = KeyboardInputVM(currentTypingInput: "lol")
+    @Previewable @StateObject var keyboardInputVM = KeyboardInputVM(lastWordTyped: "lol")
     
     @Previewable @StateObject var container = SonaAppContainer(container: DIContainer.shared)
     
@@ -71,7 +67,7 @@ extension View {
         MainView()
             .keyboardFramePreview()
     }
-    .loadCustomFonts()
+    //.loadCustomFonts()
     //.setupNormalKeyboardEnvironmentObjectsPreview(container)
     .environmentObject(keyboardInputVM)
     .environmentObject(SharedDataViewModel(textReplacements: sampleReplacements))

@@ -11,12 +11,12 @@ struct HeaderSectionView: View {
     @EnvironmentObject private var keyboardInputVM: KeyboardInputVM
     @EnvironmentObject private var sharedDataVM: SharedDataViewModel
     
-    // Text replacement suggestions
-    let onTextReplacementSelected: ((TextReplacement) -> Void)?
-    
     private  func findTextReplacements(for shortcut: String) -> [TextReplacement]{
+        if shortcut.isEmpty {
+            return []
+        }
         let textReplacements = sharedDataVM.textReplacements
-        if shortcut.isEmpty || textReplacements.isEmpty {
+        if  textReplacements.isEmpty {
             return []
         }
         // Filter text replacements based on the shortcut
@@ -29,12 +29,20 @@ struct HeaderSectionView: View {
     
     // Filter suggestions based on current input
     private var filteredSuggestions: [TextReplacement] {
-        findTextReplacements(for:keyboardInputVM.currentTypingInput)
+        findTextReplacements(for:keyboardInputVM.lastWordTyped)
     }
     
     private var filteredSuggestionsCount: Int {
         return filteredSuggestions.count
     }
+    
+    private func onSelectTextReplacement(_ replacement: TextReplacement) {
+        keyboardInputVM.onSelectTextReplacement(with: replacement.replacement)
+        //
+        sharedDataVM.setSelectedTextReplacement(replacement)
+        sharedDataVM.onPressKey(KeyItem(value: KeyboardLayout.SpecialKey.space.rawValue, key: KeyboardLayout.SpecialKey.space))
+    }
+        
     
     var body: some View {
         HStack {
@@ -42,7 +50,7 @@ struct HeaderSectionView: View {
                 HStack(spacing: 0) {
                     ForEach(Array(filteredSuggestions.enumerated()), id: \.element.id) { index, suggestion in
                         Button{
-                            onTextReplacementSelected?(suggestion)
+                            onSelectTextReplacement(suggestion)
                         }label: {
                             WText(suggestion.replacement)
                                 .fontSize(17)
@@ -79,9 +87,7 @@ struct HeaderSectionView: View {
         TextReplacement(shortcut: "lol", replacement: "😂"),
         TextReplacement(shortcut: "addr", replacement: "123 Main Street, City, State 12345")
     ]
-    HeaderSectionView {
-        print("Selected replacement: \($0.replacement)")
-    }.environmentObject(KeyboardInputVM(currentTypingInput: "lol"))
+    HeaderSectionView ().environmentObject(KeyboardInputVM(lastWordTyped: "lol"))
             .environmentObject(SharedDataViewModel(textReplacements: sampleReplacements))
     
 }
