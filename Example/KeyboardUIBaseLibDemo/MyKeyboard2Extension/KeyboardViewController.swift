@@ -7,6 +7,7 @@
 
 import UIKit
 import SwiftUI
+import Combine
 import KeyboardUIBaseLib
 
 class KeyboardViewController: UIInputViewController {
@@ -18,6 +19,9 @@ class KeyboardViewController: UIInputViewController {
     // Text Replacement View Model
     let keyboardInputVM = KeyboardInputVM()
     let textReplacementsVM = TextReplacementVM()
+    
+    private var cancellables = Set<AnyCancellable>()
+    private let sharedDataVM = SharedDataViewModel()
     
     override func updateViewConstraints() {
         super.updateViewConstraints()
@@ -44,6 +48,7 @@ class KeyboardViewController: UIInputViewController {
             }
         ).environmentObject(keyboardInputVM)
             .environmentObject(textReplacementsVM)
+            .environmentObject(sharedDataVM)
         
         let hosting = UIHostingController(rootView:mainView)
         addChild(hosting)
@@ -62,6 +67,9 @@ class KeyboardViewController: UIInputViewController {
         //        heightConstraint?.isActive = true
         //
         hosting.didMove(toParent: self)
+        
+        // Start listening to shared data changes
+        setupSharedDataListener()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -86,6 +94,39 @@ class KeyboardViewController: UIInputViewController {
         
         // Refresh UILexicon in case user added new text replacements
         loadSupplementaryLexicon()
+    }
+    //MARK: - Listen to shared data changes
+    private func setupSharedDataListener() {
+        // Listen to translated text changes
+        sharedDataVM.$translatedText
+            .sink { [weak self] translatedText in
+                self?.handleTranslatedTextChanged(translatedText)
+            }.store(in: &cancellables)
+    }
+    
+    private func handleTranslatedTextChanged(_ translatedText: String) {
+        print("🔄 KeyboardViewController: Translated text changed: '\(translatedText)'")
+        
+        // Only handle non-empty translated text
+        guard !translatedText.isEmpty else {
+            print("📝 Translated text is empty, ignoring")
+            return
+        }
+        
+        insertText(translatedText)
+        print("✅ Text replacement completed")
+        
+        // Clear the translated text after processing to avoid reprocessing
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.sharedDataVM.clearTranslatedText()
+        }
+    }
+    
+    // Method to manually trigger text update for SharedDataViewModel
+    func updateSharedDataCurrentText() {
+        let currentContext = getCurrentContext() ?? ""
+        sharedDataVM.setCurrentText(currentContext)
+        print("📝 Updated shared data current text: '\(currentContext)'")
     }
     
     // MARK: - Keyboard Configuration
@@ -119,6 +160,8 @@ class KeyboardViewController: UIInputViewController {
     
     override func textDidChange(_ textInput: UITextInput?) {
         //When text input changes, this func will call with the updated text input.
+        print("📝 Text did change - updating shared data")
+        updateCurrentTypingInput()
     }
     
     // MARK: - Keyboard Handling Methods
@@ -328,8 +371,15 @@ class KeyboardViewController: UIInputViewController {
         if let lastWord = getCurrentWord() {
             keyboardInputVM.currentTypingInput = lastWord
             print("Last word : \(lastWord)")  // Update current typing input
+            
+            // Also update the shared data with current context
+            let currentContext = getCurrentContext() ?? ""
+            sharedDataVM.setCurrentText(currentContext)
         }else {
             keyboardInputVM.resetCurrentTypingInput()
+            
+            // Clear shared data when no current input
+            sharedDataVM.setCurrentText("")
         }
     }
 }

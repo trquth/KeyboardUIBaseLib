@@ -10,6 +10,7 @@ import SwiftUI
 struct QuickTaskView: View {
     @EnvironmentObject private var sonaVM: SonaViewModel
     @EnvironmentObject private var toastMessageVM: ToastMessageManager
+    @EnvironmentObject private var sharedDataVM: SharedDataViewModel
     
     @StateObject private var loadingVM = LoadingViewModel()
     
@@ -18,7 +19,10 @@ struct QuickTaskView: View {
         do {
             loadingVM.startLoading()
             let param = ProofreadRequestParam(message: sonaVM.input)
-            _ = try await sonaVM.proofreadText(param)
+            let data = try await sonaVM.proofreadText(param)
+            if !data.output.isEmpty {
+                sharedDataVM.setTranslatedText(data.output)
+            }
             loadingVM.stopLoading()
         }catch {
             loadingVM.stopLoading()

@@ -7,9 +7,11 @@
 
 import Foundation
 
-class SharedDataViewModel: ObservableObject {
-    @Published private(set) var currentText: String = ""
-    @Published private(set) var translatedText: String = ""
+public class SharedDataViewModel: ObservableObject {
+    @Published public var currentText: String = ""
+    @Published public var translatedText: String = ""
+    
+    public init() {}
     
     public func setCurrentText(_ text: String) {
         self.currentText = text
@@ -17,5 +19,9 @@ class SharedDataViewModel: ObservableObject {
     
     public func setTranslatedText(_ text: String) {
         self.translatedText = text
+    }
+    
+    public func clearTranslatedText() {
+        self.translatedText = ""
     }
 }

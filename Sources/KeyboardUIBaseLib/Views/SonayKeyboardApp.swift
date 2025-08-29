@@ -8,11 +8,13 @@
 import SwiftUI
 
 struct SonayKeyboardApp: View {
-    @StateObject private var sonaContainer = SonaAppContainer(container: DIContainer.shared)
+    @StateObject private var container = SonaAppContainer(container: DIContainer.shared)
     
     var body: some View {
         SonaKeyboardView()
-            .environmentObject(sonaContainer)
+            .setupEnvironmentObjects(container)
+            .setupApiConfig()
+            .setupTokenApi(token: DEMO_ACCESS_TOKEN, refreshToken: REFRESH_TOKEN)
     }
 }
 
