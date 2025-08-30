@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct NormalKeyboardApp: View {
-    @EnvironmentObject private var keyboardInputVM: KeyboardInputVM
+    @EnvironmentObject private var keyboardInputVM: KeyboardInputViewModel
     @EnvironmentObject private var sharedDataVM: SharedDataViewModel
     
     @Binding var currentKeyboard: KeyboardType
@@ -27,7 +27,6 @@ struct NormalKeyboardApp: View {
             NormalKeyboardView { key in
                 keyboardInputVM.handleKeyboardInput(key){
                     keyItem in
-                    print("Input Text Updated key item :: key = \(keyItem.value)")
                     sharedDataVM.onPressKey(keyItem)
                 }
             }

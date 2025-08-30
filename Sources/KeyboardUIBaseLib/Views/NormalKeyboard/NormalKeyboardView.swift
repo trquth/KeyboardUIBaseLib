@@ -102,27 +102,24 @@ struct NormalKeyboardView: View {
         // Handle special key actions
         guard let specialKey = specialKey else { 
             // Regular text key
-            print("Text key pressed: \(actualKey)")
-            return 
+            LogUtil.i(.NORMAL_KEYBOARD_VIEW, "REGULAR text key pressed: \(actualKey)")
+            return
         }
+        LogUtil.i(.NORMAL_KEYBOARD_VIEW, "SPECIAL key pressed: \(specialKey)")
         
         switch specialKey {
         case .numbers:
             currentKeyboardMode = .numbers
             isShiftActive = false // Reset shift when changing modes
             isCapsLockActive = false // Reset caps lock when changing modes
-            print("Switched to numbers mode")
         case .symbols:
             currentKeyboardMode = .symbols
             isShiftActive = false // Reset shift when changing modes
             isCapsLockActive = false // Reset caps lock when changing modes
-            print("Switched to symbols mode")
         case .letters:
             currentKeyboardMode = .letters
-            print("Switched to letters mode")
         case .shift:
             handleShift()
-            print("Shift handled - isShift: \(isShiftActive), isCapsLock: \(isCapsLockActive)")
         case .delete:
             print("Delete pressed")
         case .enter:

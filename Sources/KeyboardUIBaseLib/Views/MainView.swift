@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct MainView: View {
-    @EnvironmentObject private var keyboardInputVM: KeyboardInputVM
+    @EnvironmentObject private var keyboardInputVM: KeyboardInputViewModel
     
     private var header : some View {
         HeaderSectionView()
@@ -48,7 +48,7 @@ extension View {
 }
 
 #Preview(traits: .sizeThatFitsLayout) {
-    @Previewable @StateObject var keyboardInputVM = KeyboardInputVM(lastWordTyped: "lol")
+    @Previewable @StateObject var keyboardInputVM = KeyboardInputViewModel(lastWordTyped: "lol")
     
     @Previewable @StateObject var container = SonaAppContainer(container: DIContainer.shared)
     

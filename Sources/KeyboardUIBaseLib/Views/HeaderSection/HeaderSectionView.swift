@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct HeaderSectionView: View {
-    @EnvironmentObject private var keyboardInputVM: KeyboardInputVM
+    @EnvironmentObject private var keyboardInputVM: KeyboardInputViewModel
     @EnvironmentObject private var sharedDataVM: SharedDataViewModel
     
     private  func findTextReplacements(for shortcut: String) -> [TextReplacement]{
@@ -87,7 +87,7 @@ struct HeaderSectionView: View {
         TextReplacement(shortcut: "lol", replacement: "😂"),
         TextReplacement(shortcut: "addr", replacement: "123 Main Street, City, State 12345")
     ]
-    HeaderSectionView ().environmentObject(KeyboardInputVM(lastWordTyped: "lol"))
+    HeaderSectionView ().environmentObject(KeyboardInputViewModel(lastWordTyped: "lol"))
             .environmentObject(SharedDataViewModel(textReplacements: sampleReplacements))
     
 }

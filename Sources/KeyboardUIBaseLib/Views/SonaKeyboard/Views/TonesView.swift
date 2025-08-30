@@ -10,7 +10,7 @@ import Combine
 
 struct TonesView: View {
     @EnvironmentObject private var sonaVM: SonaViewModel
-    @EnvironmentObject private var keyboardVM: KeyboardInputVM
+    @EnvironmentObject private var keyboardVM: KeyboardInputViewModel
     @EnvironmentObject private var toastMessageVM: ToastMessageManager
     @EnvironmentObject private var sharedDataVM: SharedDataViewModel
     

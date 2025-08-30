@@ -1,5 +1,5 @@
 //
-//  KeyboardInputVM.swift
+//  KeyboardInputViewModel.swift
 //  KeyboardUIBaseLib
 //
 //  Created by Thien Tran-Quan on 22/8/25.
@@ -10,7 +10,8 @@ import SwiftUI
 
 typealias TextChangeCallback = (KeyItem) -> Void
 
-public class KeyboardInputVM: ObservableObject {
+@MainActor
+public class KeyboardInputViewModel: ObservableObject {
     @Published public var inputText: String = ""
     @Published public var lastPressedKey: String = ""
     @Published public var currentKeyboard: KeyboardType = .text
@@ -179,7 +180,8 @@ public class KeyboardInputVM: ObservableObject {
     
     // MARK: - Keyboard Input Handling
     func handleKeyboardInput(_ key: String, callback: TextChangeCallback?) {
-        print("🔑 KeyboardInputVM handleKeyboardInput :: Key pressed: '\(key)' with special key: \(String(describing: KeyboardLayout.getSpecialKey(for: key) ?? .none))")
+        LogUtil.v(.KEYBOARD_INPUT_VM,"🔑 KeyboardInputViewModel handleKeyboardInput :: Key pressed: '\(key)' with special key: \(String(describing: KeyboardLayout.getSpecialKey(for: key) ?? .none))")
+       
         lastPressedKey = key
         if KeyboardLayout.isSpecialKey(key) {
             guard let specialKey = KeyboardLayout.getSpecialKey(for: key) else{
@@ -204,8 +206,8 @@ public class KeyboardInputVM: ObservableObject {
         
         //        onTextChanged?(inputText)
         //        onKeyPressed?(key)
-        print("📝 Added text: '\(key)' -> Current input: '\(inputText)', Last word: '\(lastWordTyped)'")
-        //  print("🔍 Current typing input: '\(currentTypingInput)'")
+        LogUtil.v(.KEYBOARD_INPUT_VM,"📝 KeyboardInputViewModel handleTextKey :: Added text: '\(key)' -> Current input: '\(inputText)', Last word: '\(lastWordTyped)'")
+        print("🔍 lastWordTyped: '\(lastWordTyped)'")
     }
     
     private func handleSpecialKey(_ key: String,_ specialKey: KeyboardLayout.SpecialKey,_ callback: TextChangeCallback? = nil) {
