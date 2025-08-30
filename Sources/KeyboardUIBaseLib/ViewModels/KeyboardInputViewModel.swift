@@ -10,7 +10,6 @@ import SwiftUI
 
 typealias TextChangeCallback = (KeyItem) -> Void
 
-@MainActor
 public class KeyboardInputViewModel: ObservableObject {
     @Published public var inputText: String = ""
     @Published public var lastPressedKey: String = ""
@@ -120,7 +119,6 @@ public class KeyboardInputViewModel: ObservableObject {
         var words = trimmedInput.components(separatedBy: .whitespacesAndNewlines)
         
         guard index >= 0 && index < words.count else {
-            print("⚠️ Invalid word index: \(index). Total words: \(words.count)")
             return
         }
         
@@ -133,7 +131,6 @@ public class KeyboardInputViewModel: ObservableObject {
         }
         
         updateLastWordTyped()
-        print("🔄 Replaced word at index \(index) with: '\(replacement)' -> Current input: '\(inputText)'")
     }
     
     // Get word at specific index
@@ -180,8 +177,6 @@ public class KeyboardInputViewModel: ObservableObject {
     
     // MARK: - Keyboard Input Handling
     func handleKeyboardInput(_ key: String, callback: TextChangeCallback?) {
-        LogUtil.v(.KEYBOARD_INPUT_VM,"🔑 KeyboardInputViewModel handleKeyboardInput :: Key pressed: '\(key)' with special key: \(String(describing: KeyboardLayout.getSpecialKey(for: key) ?? .none))")
-       
         lastPressedKey = key
         if KeyboardLayout.isSpecialKey(key) {
             guard let specialKey = KeyboardLayout.getSpecialKey(for: key) else{
@@ -200,14 +195,8 @@ public class KeyboardInputViewModel: ObservableObject {
         // Update last word typed
         updateLastWordTyped()
         
-        //        // Update current typing input for text replacement suggestions
-        //        updateCurrentTypingInput()
         callback?(KeyItem(value: key, key: nil))
-        
-        //        onTextChanged?(inputText)
-        //        onKeyPressed?(key)
         LogUtil.v(.KEYBOARD_INPUT_VM,"📝 KeyboardInputViewModel handleTextKey :: Added text: '\(key)' -> Current input: '\(inputText)', Last word: '\(lastWordTyped)'")
-        print("🔍 lastWordTyped: '\(lastWordTyped)'")
     }
     
     private func handleSpecialKey(_ key: String,_ specialKey: KeyboardLayout.SpecialKey,_ callback: TextChangeCallback? = nil) {
@@ -217,40 +206,33 @@ public class KeyboardInputViewModel: ObservableObject {
             inputText += specialKey.keyValue
             updateLastWordTyped()
             callback?(KeyItem(value: specialKey.keyValue, key: specialKey))
-            print("🎯 Added space -> Current input: '\(inputText)', Last word: '\(lastWordTyped)'")
-            
+            LogUtil.v(.KEYBOARD_INPUT_VM,"🎯 Added space -> Current input: '\(inputText)', Last word: '\(lastWordTyped)'")
         case .delete:
             if !inputText.isEmpty {
                 inputText.removeLast()
                 updateLastWordTyped()
                 callback?(KeyItem(value: specialKey.keyValue, key: specialKey))
-                print("🎯 Deleted character -> Current input: '\(inputText)', Last word: '\(lastWordTyped)'")
+                LogUtil.v(.KEYBOARD_INPUT_VM,"🎯 Deleted character -> Current input: '\(inputText)', Last word: '\(lastWordTyped)'")
             }
             
         case .enter:
-            print("🎯 Enter pressed -> Submit: '\(inputText)'")
+            LogUtil.v(.KEYBOARD_INPUT_VM,"🎯 Enter pressed -> Submit: '\(inputText)'")
             callback?(KeyItem(value: specialKey.keyValue, key: specialKey))
         case .shift:
-            print("🎯 Shift toggled")
+            break
             // Shift state is handled internally by the keyboard
-            
         case .numbers, .symbols, .letters:
-            print("🎯 Keyboard mode changed to: \(specialKey)")
+            LogUtil.v(.KEYBOARD_INPUT_VM,"🎯 Switching keyboard mode to: \(specialKey)")
             
         case .globe:
-            print("🎯 Language/Globe pressed - Switching to Sona keyboard")
             withAnimation(.easeInOut(duration: 0.3)) {
                 currentKeyboard = .sona
             }
-            
         case .dot:
             inputText += specialKey.keyValue
             updateLastWordTyped()
             callback?(KeyItem(value: specialKey.keyValue, key: specialKey))
-            print("🎯 Added dot -> Current input: '\(inputText)', Last word: '\(lastWordTyped)'")
-            
         case .emoji:
-            print("🎯 Emoji button pressed")
             withAnimation(.easeInOut(duration: 0.3)) {
                 currentKeyboard = .emoji
             }
@@ -266,14 +248,12 @@ public class KeyboardInputViewModel: ObservableObject {
                 inputText.removeLast()
                 updateLastWordTyped()
                 callback?(KeyItem(value: emoji, key: nil))
-                print("🎯 Deleted character from emoji keyboard -> Current input: '\(inputText)', Last word: '\(lastWordTyped)'")
             }
         } else {
             // Add emoji to input
             inputText += emoji
             updateLastWordTyped()
             callback?(KeyItem(value: emoji, key: nil))
-            print("😀 Added emoji: '\(emoji)' -> Current input: '\(inputText)', Last word: '\(lastWordTyped)'")
         }
     }
     
