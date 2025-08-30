@@ -58,21 +58,17 @@ public class KeyboardInputViewModel: ObservableObject {
     
     private func getLastWordFromInput() -> String {
         // Remove trailing spaces and get the last word
-        let trimmedInput = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
+        //let trimmedInput = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let input = inputText
         
         // If input is empty, return empty string
-        guard !trimmedInput.isEmpty else {
+        guard !input.isEmpty else {
             return ""
         }
         
         // Split by whitespace and get the last component
-        let words = trimmedInput.components(separatedBy: .whitespacesAndNewlines)
+        let words = input.components(separatedBy: .whitespacesAndNewlines)
         return words.last ?? ""
-    }
-    
-    // Public method to manually get the current last word
-    public func getCurrentLastWord() -> String {
-        return getLastWordFromInput()
     }
     
     // MARK: - Text Replacement Methods

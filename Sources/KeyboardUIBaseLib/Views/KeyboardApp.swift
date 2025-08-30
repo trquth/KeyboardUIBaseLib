@@ -19,11 +19,27 @@ public struct KeyboardApp: View {
     }
 }
 
+#Preview("Input text") {
+    @Previewable @StateObject var container = SonaAppContainer(container: DIContainer.shared)
+    @Previewable @StateObject var vm = KeyboardInputViewModel(inputText: "")
+    
+    VStack {
+        WText("Input text ::: \(vm.inputText)")
+        WText("Last word ::: \(vm.lastWordTyped)")
+        MainView()
+            .keyboardFramePreview()
+            .environmentObject(vm)
+            .environmentObject(container.sharedDataVM)
+            //.setupCommonEnvironmentObjects(container)
+    }
+}
+
 #Preview {
     @Previewable @StateObject var container = SonaAppContainer(container: DIContainer.shared)
     KeyboardApp()
         .keyboardFramePreview()
         .environmentObject(container.sharedDataVM)
-        .setupCommonEnvironmentObjects(container)
 }
+
+
 
