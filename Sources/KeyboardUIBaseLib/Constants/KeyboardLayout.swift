@@ -131,7 +131,7 @@ public struct KeyboardLayout {
     }
     
     static func getSpecialKey(for string: String) -> SpecialKey? {
-        return SpecialKey.allCases.first { $0.rawValue == string || $0.keyDisplay == string }
+        return SpecialKey.allCases.first { $0.rawValue.lowercased() == string.lowercased() || $0.keyDisplay.lowercased() == string.lowercased() }
     }
     
     static func isActionKey(_ key: String) -> Bool {

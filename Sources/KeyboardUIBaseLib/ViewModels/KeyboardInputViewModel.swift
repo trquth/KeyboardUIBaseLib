@@ -174,14 +174,12 @@ public class KeyboardInputViewModel: ObservableObject {
     // MARK: - Keyboard Input Handling
     func handleKeyboardInput(_ key: String, callback: TextChangeCallback?) {
         lastPressedKey = key
-        if KeyboardLayout.isSpecialKey(key) {
-            guard let specialKey = KeyboardLayout.getSpecialKey(for: key) else{
-                return
-            }
-            handleSpecialKey(key, specialKey, callback)
-        }else{
+        LogUtil.v(.KEYBOARD_INPUT_VM,"🔑 Key pressed: '\(key)'")
+        guard let specialKey = KeyboardLayout.getSpecialKey(for: key) else{
             handleTextKey(key,callback)
+            return
         }
+        handleSpecialKey(key, specialKey, callback)
     }
     
     private func handleTextKey(_ key: String,_ callback: TextChangeCallback? = nil) {
@@ -196,6 +194,7 @@ public class KeyboardInputViewModel: ObservableObject {
     }
     
     private func handleSpecialKey(_ key: String,_ specialKey: KeyboardLayout.SpecialKey,_ callback: TextChangeCallback? = nil) {
+        LogUtil.v(.KEYBOARD_INPUT_VM,"🔑 Handling special key: \(specialKey) ('\(key)')")
         
         switch specialKey {
         case .space:
@@ -218,8 +217,7 @@ public class KeyboardInputViewModel: ObservableObject {
             break
             // Shift state is handled internally by the keyboard
         case .numbers, .symbols, .letters:
-            LogUtil.v(.KEYBOARD_INPUT_VM,"🎯 Switching keyboard mode to: \(specialKey)")
-            
+            LogUtil.v(.KEYBOARD_INPUT_VM,"🎯 Switching keyboard mode to: \(specialKey)")    
         case .globe:
             withAnimation(.easeInOut(duration: 0.3)) {
                 currentKeyboard = .sona

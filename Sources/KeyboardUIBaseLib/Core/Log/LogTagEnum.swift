@@ -19,7 +19,7 @@ public enum LogTagEnum: String, CaseIterable {
 //    }
     
     static var skipTags: Set<String> {
-        let skipTags: [LogTagEnum] = [.NORMAL_KEYBOARD_VIEW]
+        let skipTags: [LogTagEnum] = []
         if( skipTags.isEmpty ) {
             return []
         }

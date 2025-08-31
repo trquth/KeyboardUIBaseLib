@@ -39,6 +39,7 @@ struct NormalKeyboardApp: View {
 
 #Preview {
     @Previewable @StateObject var container = SonaAppContainer(container: DIContainer.shared)
+    
     NormalKeyboardApp(currentKeyboard: .constant(.text))
         .keyboardFramePreview()
         .keyboardBorderPreview()

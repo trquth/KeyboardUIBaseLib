@@ -17,6 +17,13 @@ extension View {
         self.border(.yellow, width: 1)
     }
     
+    func keyboardBorderAutoHeightPreview()-> some View {
+        GeometryReader { geo in
+            self.frame(height: geo.size.height)
+              
+        }.border(.yellow, width: 1)
+    }
+    
     func setupEnvironmentObjectsPreview (_ container: SonaAppContainer) -> some View {
             self.environmentObject(container.sonaVM)
             .environmentObject(container.loadingVM)

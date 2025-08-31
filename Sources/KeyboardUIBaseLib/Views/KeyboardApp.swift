@@ -24,8 +24,12 @@ public struct KeyboardApp: View {
     @Previewable @StateObject var vm = KeyboardInputViewModel(inputText: "")
     
     VStack {
-        WText("Input text ::: \(vm.inputText)")
-        WText("Last word ::: \(vm.lastWordTyped)")
+        WText("::: Input text :::")
+            .bold()
+        WText("\(vm.inputText)")
+        WText("::: Last word :::")
+            .bold()
+        WText("\(vm.lastWordTyped)")
         MainView()
             .keyboardFramePreview()
             .environmentObject(vm)
