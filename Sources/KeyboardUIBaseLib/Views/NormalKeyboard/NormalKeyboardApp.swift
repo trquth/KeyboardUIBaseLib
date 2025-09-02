@@ -24,7 +24,7 @@ struct NormalKeyboardApp: View {
                 }
             }
         default:
-            NormalKeyboardView { key in
+            NormalKeyboardView(currentText: $keyboardInputVM.inputText) { key in
                 keyboardInputVM.handleKeyboardInput(key){
                     keyItem in
                     sharedDataVM.onPressKey(keyItem)

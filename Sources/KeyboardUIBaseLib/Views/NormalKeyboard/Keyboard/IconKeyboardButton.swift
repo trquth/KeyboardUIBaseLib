@@ -13,6 +13,7 @@ struct IconKeyboardButton: View {
     let height: CGFloat
     let iconSize: CGSize
     let foregroundColor: Color
+    let backgroundColor: Color?
     let isActive: Bool
     let action: () -> Void
     
@@ -22,6 +23,7 @@ struct IconKeyboardButton: View {
         height: CGFloat = 45,
         iconSize: CGSize = CGSize(width: 17, height: 15),
         foregroundColor: Color = .black,
+        backgroundColor: Color? = nil,
         isActive: Bool = false,
         action: @escaping () -> Void = {}
     ) {
@@ -30,16 +32,26 @@ struct IconKeyboardButton: View {
         self.height = height
         self.iconSize = iconSize
         self.foregroundColor = foregroundColor
+        self.backgroundColor = backgroundColor
         self.isActive = isActive
         self.action = action
     }
     
+    private var buttonStyle: WIconButtonStyle {
+        return backgroundColor == nil ? .minimal : .contained
+    }
+    
+    private var buttonBackgroundColor: Color {
+        return backgroundColor ?? .clear
+    }
+        
     var body: some View {
         WIconButton(assetName, action: action)
-            .buttonStyle(.minimal)
+            .buttonStyle(.contained)
             .buttonSize(width: width, height: height)
             .iconSize(iconSize)
             .foregroundColor(foregroundColor)
+            .backgroundColor(buttonBackgroundColor)
             .cornerRadius(5.7)
             .active(isActive)
     }
@@ -91,7 +103,8 @@ struct IconKeyboardButton: View {
             
             IconKeyboardButton(
                 assetName: "delete_ico",
-                foregroundColor: .green
+                foregroundColor: .green,
+                backgroundColor: Color(hex: "#E8E8E8")
             ) {
                 print("Green delete pressed")
             }

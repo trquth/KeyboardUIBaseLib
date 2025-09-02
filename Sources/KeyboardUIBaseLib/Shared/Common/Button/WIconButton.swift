@@ -69,7 +69,7 @@ struct WIconButton: View {
         case .outlined:
             return .clear
         case .contained:
-            return _backgroundColor != Color(hex: "#E8E8E8") ? _backgroundColor : Color(hex: "#007AFF")
+            return _backgroundColor
         }
     }
     
@@ -328,11 +328,17 @@ extension WIconButton {
             VStack(spacing: 16) {
                 Text("Keyboard Buttons")
                     .font(.headline)
+                HStack {
+                    Color(hex: "#E8E8E8")
+                        .frame(width: 50,height:50)
+                    Color(hex: "#E8E8E8")
+                        .frame(width: 50,height:50)
+                }
                 
                 VStack(spacing: 12) {
                     HStack(spacing: 12) {
                         WIconButton("delete_ico")
-                            .buttonStyle(.outlined)
+                            .buttonStyle(.contained)
                             .backgroundColor(Color(hex: "#E8E8E8"))
                             .foregroundColor(.black)
                             .buttonSize(width: 46.5, height: 45)

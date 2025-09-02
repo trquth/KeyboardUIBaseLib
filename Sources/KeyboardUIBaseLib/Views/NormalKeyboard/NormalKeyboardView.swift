@@ -15,6 +15,8 @@ struct NormalKeyboardView: View {
     @State private var lastShiftTapTime: Date = Date()
     @State private var calculatedKeyItems: [KeyItem] = []
     @State private var containerWidth: CGFloat = 0
+    @State private var shouldAutoCapitalize = true // Auto capitalization state
+    @Binding var currentText: String
     
     // Callback for key presses
     let onKeyPressed: ((String) -> Void)?
@@ -25,7 +27,8 @@ struct NormalKeyboardView: View {
     private let keySpacing: CGFloat = 4.0 // Reduced spacing for better full-width usage
     private let keyboardPadding: CGFloat = 0 // Use full width - no padding
     
-    init(onKeyPressed: ((String) -> Void)? = nil) {
+    init(currentText: Binding<String>, onKeyPressed: ((String) -> Void)? = nil) {
+        self._currentText = currentText
         self.onKeyPressed = onKeyPressed
     }
     
@@ -69,14 +72,23 @@ struct NormalKeyboardView: View {
         if timeDifference < 0.3 {
             isCapsLockActive.toggle()
             isShiftActive = false
+            LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Double tap detected - Caps Lock: \(isCapsLockActive ? "ON" : "OFF")")
         } else {
             // Single tap toggles shift
             if isCapsLockActive {
                 // If caps lock is on, turn it off with single tap
                 isCapsLockActive = false
+                shouldAutoCapitalize = false
+                LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Caps Lock disabled by single tap")
             } else {
                 isShiftActive.toggle()
+                LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Shift: \(isShiftActive ? "ON" : "OFF")")
             }
+        }
+        
+        // When user manually activates shift/caps, disable auto capitalization for that character
+        if isShiftActive || isCapsLockActive {
+            shouldAutoCapitalize = false
         }
         
         lastShiftTapTime = currentTime
@@ -85,19 +97,30 @@ struct NormalKeyboardView: View {
     private func handleCharacterKey(_ key: String) -> String {
         let actualKey: String
         if currentKeyboardMode == .letters {
-            actualKey = (isCapsLockActive || isShiftActive) ? key.uppercased() : key.lowercased()
+            // Check if we should auto capitalize
+            let shouldCapitalize = isCapsLockActive || isShiftActive || shouldAutoCapitalizeNext()
+            actualKey = shouldCapitalize ? key.uppercased() : key.lowercased()
+            
             // Auto-disable shift after typing a letter (single shift behavior, but not caps lock)
             if isShiftActive && !isCapsLockActive {
                 isShiftActive = false
             }
+            
+            // Update current text and auto capitalization state
+           // currentText += actualKey
+            //updateAutoCapitalizationState(for: actualKey)
         } else {
             actualKey = key
+            // Update current text for symbols/numbers too
+            //currentText += actualKey
+            //updateAutoCapitalizationState(for: actualKey)
         }
         
         onKeyPressed?(actualKey)
         return actualKey
     }
     
+   
     private func handleShiftKey() {
         handleShift() // Use existing shift logic
     }
@@ -146,7 +169,6 @@ struct NormalKeyboardView: View {
         case .delete:
             print("Delete pressed")
         case .enter:
-            print("Enter pressed")
             // Reset single shift on new line (but not caps lock)
             if isShiftActive && !isCapsLockActive {
                 isShiftActive = false
@@ -154,11 +176,11 @@ struct NormalKeyboardView: View {
         case .globe:
             print("Globe pressed")
         case .space:
-            print("Space pressed")
             // Reset single shift after space (but not caps lock)
             if isShiftActive && !isCapsLockActive {
                 isShiftActive = false
             }
+            print("Space pressed")
         case .dot:
             print("Dot pressed")
         case .emoji:
@@ -189,6 +211,19 @@ struct NormalKeyboardView: View {
             handleKeyPress(keyItem.key)
         }
     }
+    
+    private func renderIconKeyButton(_ keyItem: KeyItem,withAsset asset: AssetIconEnum, isActive: Bool) -> some View {
+        IconKeyboardButton(
+            assetName: asset.rawValue,
+            width: keyItem.frame.width,
+            height: keyItem.frame.height,
+            foregroundColor: .black,
+            backgroundColor: isActive ? Color(hex: "#E8E8E8") : nil
+        ) {
+            handleKeyPress(keyItem.key)
+        }
+    }
+    
     
     private func renderTextKeyButton(_ keyItem: KeyItem, withTitle title: String = "") -> some View {
         TextKeyboardButton(
@@ -221,7 +256,9 @@ struct NormalKeyboardView: View {
                 case .space:
                     renderSpaceButton(keyItem)
                 case .shift:
-                    renderIconKeyButton(keyItem, withAsset: .upperCase)
+                    // Determine if shift key should appear active
+                    let isActive = isCapsLockActive || isShiftActive || (shouldAutoCapitalize && currentKeyboardMode == .letters)
+                    renderIconKeyButton(keyItem, withAsset: .upperCase, isActive: isActive)
                 case .delete:
                     renderIconKeyButton(keyItem, withAsset: .delete)
                 case .enter:
@@ -259,6 +296,8 @@ struct NormalKeyboardView: View {
                 Color.clear
                     .onAppear {
                         recalculateKeyItems(for: geometry.size.width)
+                        // Initialize auto capitalization based on current text
+                        updateAutoCapitalizationStateFromText()
                     }
                     .onChangeCompact(of: geometry.size.width) { newWidth in
                         recalculateKeyItems(for: newWidth)
@@ -273,12 +312,66 @@ struct NormalKeyboardView: View {
                             y: keyItem.frame.midY
                         )
                 }.onChangeCompact(of: currentKeyboardMode, perform: { _ in
+                    LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Keyboard mode changed to \(currentKeyboardMode), recalculating keys")
+                 
                     recalculateKeyItems(for: geometry.size.width)
+                })
+                .onChangeCompact(of: currentText, perform: { _ in
+                    LogUtil.d(.NORMAL_KEYBOARD_VIEW,"On change current text")
+                    updateAutoCapitalizationStateFromText()
                 })
             }
         }
         .frame(height: calculateKeyboardHeight())
     }
+}
+
+extension NormalKeyboardView {
+    // MARK: - Auto Capitalization Logic
+    
+    private func shouldAutoCapitalizeNext() -> Bool {
+        return shouldAutoCapitalize
+    }
+    
+    /// Update the current text context for auto capitalization
+    public func updateTextContext(_ text: String) {
+        //currentText = text
+        updateAutoCapitalizationStateFromText()
+    }
+    
+    private func updateAutoCapitalizationStateFromText() {
+        let trimmedText = currentText.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        if trimmedText.isEmpty {
+            // Beginning of text
+            shouldAutoCapitalize = true
+        } else {
+            // Check if we're after a sentence ending followed by space(s)
+            let sentenceEnders: Set<Character> = [".", "!", "?"]
+            let words = trimmedText.components(separatedBy: .whitespaces)
+            
+            if let lastWord = words.last, !lastWord.isEmpty {
+                // Check if the original text ends with whitespace after a sentence ender
+                if currentText.hasSuffix(" ") || currentText.hasSuffix("\t") || currentText.hasSuffix("\n") {
+                    if let lastChar = lastWord.last, sentenceEnders.contains(lastChar) {
+                        shouldAutoCapitalize = true
+                    } else {
+                        shouldAutoCapitalize = false
+                    }
+                } else {
+                    // In the middle of a word
+                    shouldAutoCapitalize = false
+                }
+            } else {
+                // Only whitespace at the end
+                shouldAutoCapitalize = true
+            }
+        }
+        
+        isCapsLockActive = shouldAutoCapitalize
+        LogUtil.v(LogTagEnum.NORMAL_KEYBOARD_VIEW, "Auto capitalization updated: shouldAutoCapitalize = \(shouldAutoCapitalize), text: '\(currentText)'")
+    }
+    
 }
 
 extension NormalKeyboardView {
@@ -488,7 +581,6 @@ extension NormalKeyboardView {
             )
         }
     }
-    
 }
 
 extension View {
@@ -512,18 +604,27 @@ extension View {
 #Preview("Custom Keyboard - Letters") {
     @Previewable @State var inputText: String = ""
     @Previewable @State var keyboardStats: String = "No stats yet"
+    @Previewable @State var vm: KeyboardInputViewModel = KeyboardInputViewModel(inputText: "")
+    
+    
     
     VStack(alignment:.center) {
-        WText("::: INPUT :::").bold()
+        WText("::: STATE INPUT :::").bold()
         WText("\(inputText)")
-        WText("::: STATS :::").bold()
-        WText("\(keyboardStats)")
-            .font(.caption)
-            .foregroundColor(.secondary)
+            .lineLimit(2)
+            .truncationMode(.head)
+        WText("::: VM INPUT :::").bold()
+        WText("\(vm.inputText)")
+            .lineLimit(2)
+            .truncationMode(.head)
         
         GeometryReader { geometry in
-            NormalKeyboardView { key in
+        
+            NormalKeyboardView(currentText: $vm.inputText) { key in
                 inputText += key
+                vm.handleKeyboardInput(key){
+                    print("Handled key: \($0.value)")
+                }
             }
             .onAppear {
                 // Calculate and display keyboard statistics
@@ -532,7 +633,8 @@ extension View {
             }
         }
         .frame(height: 250)
-        .border(.yellow, width: 1)
+        .environmentObject(vm)
+        .keyboardBorderPreview()
     }
 }
 
@@ -541,7 +643,7 @@ extension View {
         Text("Keyboard with Callback")
             .font(.headline)
         
-        NormalKeyboardView { key in
+        NormalKeyboardView(currentText:.constant("Hello")) { key in
             print("📝 Text key pressed: \(key)")
         }
     }
@@ -552,13 +654,13 @@ extension View {
     VStack(spacing: 20) {
         Text("Letters Mode")
             .font(.headline)
-        NormalKeyboardView { key in
+        NormalKeyboardView(currentText: .constant("Hello")) { key in
             print("Key pressed: \(key)")
         }
         
         Text("Numbers Mode")
             .font(.headline)
-        NormalKeyboardView { key in
+        NormalKeyboardView(currentText: .constant("Hello")) { key in
             print("Key pressed: \(key)")
         }
         .onAppear {
@@ -567,7 +669,7 @@ extension View {
         
         Text("Symbols Mode")
             .font(.headline)
-        NormalKeyboardView { key in
+        NormalKeyboardView(currentText: .constant("Hello")) { key in
             print("Key pressed: \(key)")
         }
     }
