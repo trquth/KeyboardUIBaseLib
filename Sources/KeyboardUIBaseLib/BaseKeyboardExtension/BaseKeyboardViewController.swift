@@ -61,6 +61,8 @@ open class BaseKeyboardViewController: UIInputViewController {
         
         // Start listening to shared data changes
         setupSharedDataListener()
+        // Get keyboard config data from app group
+        getKeyboardConfigData()
     }
     
     public override func viewWillAppear(_ animated: Bool) {
@@ -68,6 +70,8 @@ open class BaseKeyboardViewController: UIInputViewController {
         
         // Configure keyboard appearance
         setupKeyboardAppearance()
+        //
+        
     }
     
     public override func viewWillLayoutSubviews() {
@@ -103,6 +107,20 @@ open class BaseKeyboardViewController: UIInputViewController {
     }
     
  
+}
+extension BaseKeyboardViewController {
+    private func getKeyboardConfigData(){
+        getTokenFromAppGroup()
+    }
+    
+    private func getTokenFromAppGroup(){
+        if let token =  UserDefaultUtil.getValueFromAppGroup(String.self, forKey: "DEMO_ACCESS_TOKEN", groupIdentifier: "group.keyboarduibaselib"), !token.isEmpty  {
+            TokenAppStorageService.shared.saveTokens(
+                accessToken: token,
+                refreshToken: REFRESH_TOKEN
+            )
+        }
+    }
 }
 
 //MARK: - Listen to shared data changes
