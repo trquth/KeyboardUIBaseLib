@@ -583,23 +583,23 @@ extension NormalKeyboardView {
     }
 }
 
-extension View {
-    @ViewBuilder
-    func onChangeCompact<T: Equatable>(
-        of value: T,
-        perform action: @escaping (T) -> Void
-    ) -> some View {
-        if #available(iOS 17, *) {
-            // iOS 17+ dùng new API (oldValue, newValue)
-            self.onChange(of: value) { _, newValue in
-                action(newValue)
-            }
-        } else {
-            // iOS 14–16 dùng old API
-            self.onChange(of: value, perform: action)
-        }
-    }
-}
+//extension View {
+//    @ViewBuilder
+//    func onChangeCompact<T: Equatable>(
+//        of value: T,
+//        perform action: @escaping (T) -> Void
+//    ) -> some View {
+//        if #available(iOS 17, *) {
+//            // iOS 17+ dùng new API (oldValue, newValue)
+//            self.onChange(of: value) { _, newValue in
+//                action(newValue)
+//            }
+//        } else {
+//            // iOS 14–16 dùng old API
+//            self.onChange(of: value, perform: action)
+//        }
+//    }
+//}
 
 #Preview("Custom Keyboard - Letters") {
     @Previewable @State var inputText: String = ""

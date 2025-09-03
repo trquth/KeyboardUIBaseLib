@@ -13,6 +13,7 @@ public class SharedDataViewModel: ObservableObject {
     @Published public var textReplacements: [TextReplacement] = []
     @Published public var currentTypingInput = ""
     @Published public var selectedTextReplacement: TextReplacement? = nil
+    @Published public var inputText = ""
     
     @Published public var accessToken: String = ""
     
@@ -56,5 +57,9 @@ public class SharedDataViewModel: ObservableObject {
     
     public func setAccessToken(_ token: String) {
         self.accessToken = token
+    }
+    
+    public func setTextInput(_ text: String) {
+        self.inputText = text
     }
 }

@@ -96,15 +96,26 @@ open class BaseKeyboardViewController: UIInputViewController {
         //When text input changes, this func will call with the updated text input.
         print("📝 Text did change - updating shared data")
         updateCurrentTypingInput()
+        //
+        getTextFromTextField()
     }
     
     
     public override func advanceToNextInputMode() {
         super.advanceToNextInputMode()
     }
-    
- 
 }
+
+extension BaseKeyboardViewController {
+    //
+    private func getTextFromTextField() {
+        if let currentText = KeyboardUtil.getCurrentContext(textDocumentProxy), !currentText.isEmpty {
+            print("Current text context: '\(currentText)'")
+            sharedDataVM.setTextInput(currentText)
+        }
+    }
+}
+
 extension BaseKeyboardViewController {
     private func getKeyboardConfigData(){
         getTokenFromAppGroup()

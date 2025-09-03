@@ -99,6 +99,9 @@ struct QuickTaskView: View {
             copyButton
         }
         .allowsHitTesting(!loadingVM.isLoading)
+        .onChangeCompact(of: sharedDataVM.inputText) { value in
+            keyboardVM.setInputText(value)
+        }
         //.displayToastMessage(toastMessageVM)
     }
 }

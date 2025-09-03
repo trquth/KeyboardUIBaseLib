@@ -75,10 +75,8 @@ struct ContentView: View {
                             .background(RoundedRectangle(cornerRadius: 10).fill(.red))
                     }
                 }
-                TextField(text: $input) {
-                    Text("Input something...")
-                    
-                }
+                TextEditor(text: $input)
+                .frame(height: 150)
                 .focused($isFocused)
                 .padding()
                     .overlay(

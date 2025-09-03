@@ -69,8 +69,8 @@ struct HeaderSectionView: View {
             }
             WSpacer()
             SwitchKeyboardButton{
-                withAnimation(.easeInOut(duration: 0.3)) {              keyboardInputVM.switchKeyboard(keyboardInputVM.currentKeyboard)
-                }
+//                withAnimation(.easeInOut(duration: 0.3)) {          keyboardInputVM.switchKeyboard(keyboardInputVM.currentKeyboard)
+//                }
             }
         }
         .padding(.horizontal, 16)
