@@ -41,44 +41,90 @@ enum ChipSize {
 }
 
 struct ChipView: View {
-  private let title: String
+    private let title: String
     private var isSelected: Bool
     private var isDisabled: Bool
     private var isLoading: Bool
     private var size: ChipSize = .normal
+    private var hasShadow: Bool = false
+    private var shadowColor: Color = Color.black.opacity(0.15)
+    private var shadowRadius: CGFloat = 10
+    private var shadowOffset: CGSize = CGSize(width: 0, height: 0)
     private var action: () -> Void
     
     init(_ title: String,
-            isSelected: Bool = true,
-            isDisabled: Bool = false,
-            isLoading: Bool = false,
-            size: ChipSize = .normal,
+         isSelected: Bool = true,
+         isDisabled: Bool = false,
+         isLoading: Bool = false,
+         size: ChipSize = .normal,
+         hasShadow: Bool = true,
+         shadowColor: Color = Color.black.opacity(0.15),
+         shadowRadius: CGFloat = 3,
+         shadowOffset: CGSize = CGSize(width: 0, height: 0),
          action: @escaping () -> Void) {
         self.title = title
         self.isSelected = isSelected
         self.isDisabled = isDisabled
         self.isLoading = isLoading
         self.size = size
+        self.hasShadow = hasShadow
+        self.shadowColor = shadowColor
+        self.shadowRadius = shadowRadius
+        self.shadowOffset = shadowOffset
         self.action = action
+    }
+    
+    private var shadowColorChip: Color {
+        if isSelected {
+            return .clear
+        }
+        return  hasShadow ? shadowColor : .clear
+    }
+    
+    private var shadowRadiusChip: CGFloat {
+        if isSelected {
+            return 0
+        }
+        return   hasShadow ? shadowRadius : 0
+    }
+    
+    private var shadowXChip: CGFloat {
+        if isSelected {
+            return 0
+        }
+        return hasShadow ? shadowOffset.width : 0
+    }
+    
+    private var shadowYChip: CGFloat {
+        if isSelected {
+            return 0
+        }
+        return hasShadow ? shadowOffset.height : 0
     }
     
     var body: some View {
         WTextButton(title, action: action)
             .buttonStyle(.contained)
             .foregroundColor((isDisabled == true || isLoading == true) ? .black.opacity(0.3) : (isSelected ? .white : .black))
-            .backgroundColor((isDisabled == true || isLoading == true) ? Color(hex: "#F6F5F4") : (isSelected ? .black : Color(hex: "#F6F5F4")))
+            .backgroundColor((isDisabled == true || isLoading == true) ? .white : (isSelected ? Color(hex:"#23AF5E") : .white))
             .customFont(.interMedium, size: size.fontSize)
             .height(size.height)
             .cornerRadius(106)
             .horizontalPadding(size.horizontalPadding)
             .verticalPadding(size.verticalPadding)
             .disable(isDisabled || isLoading)
+            .shadow(
+                color: shadowColorChip,
+                radius: shadowRadiusChip,
+                x: shadowXChip,
+                y: shadowYChip
+            )
             .overlay(
                 // Show activity indicator when loading
                 Group {
                     if isLoading {
                         RoundedRectangle(cornerRadius: 106)
-                            .fill(isSelected ? .black : Color(hex: "#F6F5F4"))
+                            .fill(isSelected ? Color(hex:"#23AF5E") : Color(hex: "#F6F5F4"))
                             .frame(height: size.height)
                             .overlay(
                                 ActivityIndicator(
@@ -113,14 +159,42 @@ extension ChipView {
         return copy
     }
     
-   private func size(_ size: ChipSize) -> ChipView {
+    private func size(_ size: ChipSize) -> ChipView {
         var copy = self
-       copy.size = size
+        copy.size = size
         return copy
     }
     
     func small() -> ChipView {
         size(.small)
+    }
+    
+    func withShadowOffset(
+        enabled: Bool = true,
+        color: Color = Color.black.opacity(0.15),
+        radius: CGFloat = 10,
+        offset: CGSize = CGSize(width: 0, height: 0)
+    ) -> ChipView {
+        var copy = self
+        copy.hasShadow = enabled
+        copy.shadowColor = color
+        copy.shadowRadius = radius
+        copy.shadowOffset = offset
+        return copy
+    }
+    
+    func withShadowXY(
+        color: Color = Color.black.opacity(0.15),
+        radius: CGFloat = 10,
+        x: CGFloat = 0,
+        y: CGFloat = 0
+    ) -> ChipView {
+        var copy = self
+        copy.hasShadow = true
+        copy.shadowColor = color
+        copy.shadowRadius = radius
+        copy.shadowOffset = CGSize(width: x, height: y)
+        return copy
     }
 }
 
@@ -149,6 +223,52 @@ extension ChipView {
                     }
                     
                     Text("Default Selected • Unselected • Disabled")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+            
+            Divider()
+            
+            // Shadow Examples
+            VStack(spacing: 16) {
+                Text("Shadow Examples")
+                    .font(.headline)
+                
+                VStack(spacing: 12) {
+                    HStack(spacing: 12) {
+                        ChipView("No Shadow") {
+                            print("No shadow tapped")
+                        }
+                        
+                        ChipView("Default Shadow", hasShadow: true) {
+                            print("Default shadow tapped")
+                        }
+                        
+                        ChipView("Chain Shadow") {
+                            print("Chain shadow tapped")
+                        }
+                        // .withShadow()
+                    }
+                    
+                    HStack(spacing: 12) {
+                        ChipView("Custom Shadow") {
+                            print("Custom shadow tapped")
+                        }
+                        .withShadowXY(color: .blue.opacity(0.3), radius: 6, x: 2, y: 4)
+                        
+                        ChipView("Red Shadow", isSelected: false) {
+                            print("Red shadow tapped")
+                        }
+                        .withShadowXY(color: .red.opacity(0.4), radius: 8, x: 0, y: 3)
+                        
+                        ChipView("Small + Shadow", size: .small) {
+                            print("Small shadow tapped")
+                        }
+                        .withShadowXY(color: .purple.opacity(0.3), radius: 3, x: 1, y: 2)
+                    }
+                    
+                    Text("No Shadow • Default • Chain • Custom Colors")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -217,7 +337,7 @@ extension ChipView {
                         }
                     }
                     
-                    // Unselected states  
+                    // Unselected states
                     HStack(spacing: 12) {
                         ChipView("Unselected Normal", isSelected: false) {
                             print("Unselected normal tapped")
@@ -307,6 +427,22 @@ extension ChipView {
                         }
                         .isSelected(true)
                         .disable(false)
+                        .small()
+                        .withShadowXY(color: .green.opacity(0.3), radius: 5, x: 2, y: 3)
+                    }
+                    
+                    HStack(spacing: 12) {
+                        ChipView("Shadow Chain") {
+                            print("Shadow chain tapped")
+                        }
+                        .small()
+                        .isSelected(false)
+                        // .withShadow()
+                        
+                        ChipView("Multi Shadow") {
+                            print("Multi shadow tapped")
+                        }
+                        .withShadowXY(color: .orange.opacity(0.4), radius: 6)
                         .small()
                     }
                     

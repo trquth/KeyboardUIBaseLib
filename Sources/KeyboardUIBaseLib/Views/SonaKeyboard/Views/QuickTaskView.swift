@@ -19,10 +19,15 @@ struct QuickTaskView: View {
     private func onRewrite() async {
         do {
             loadingVM.startLoading()
-            let param = ProofreadRequestParam(message: keyboardVM.inputText)
-            let data = try await sonaVM.proofreadText(param)
+            let message = keyboardVM.inputText
+            let selectedTone = !sonaVM.selectedTone.isEmpty ? sonaVM.selectedTone : DEFAULT_SONA_TONE
+            let selectedPersona = !sonaVM.selectedPersona.isEmpty ? sonaVM.selectedPersona : DEFAULT_SONA_PERSONA
+            
+            let params = RewriteRequestParam(message: message, tone: selectedTone, persona: selectedPersona)
+            let data = try await sonaVM.rewriteText(params)
             let translatedText = data.output
             if !translatedText.isEmpty {
+                LogUtil.d(.QUICK_TASKS_VIEW, "translated text '\(translatedText)'")
                 sharedDataVM.setTranslatedText(translatedText)
                 keyboardVM.setInputText(translatedText)
             }
@@ -38,31 +43,28 @@ struct QuickTaskView: View {
         }
     }
     
+    private var isDisableRewriteButton: Bool {
+        if keyboardVM.inputText.isEmpty {
+            return true
+        }
+        return loadingVM.isLoading
+    }
     
-    private var textEditorButton: some View {
-        QuickTaskButton("text_editor_ico"){
+    private var isDisableButton: Bool {
+        if keyboardVM.inputText.isEmpty {
+            return true
+        }
+        return loadingVM.isLoading
+    }
+    
+    private var rewriteButton: some View {
+        QuickTaskButton("revert_ico"){
             Task {
                 await onRewrite()
             }
-        }.iconSize(width: 15.76, height: 18.91)
-            .loading(loadingVM.isLoading)
-            .disabled(loadingVM.isLoading)
-    }
-    
-    private var translationButton: some View {
-        QuickTaskButton("translation_ico"){
-            
-        }.iconSize(width: 25.22, height: 20)
-            .loading(false)
-            .disabled(true)
-    }
-    
-    private var revertButton: some View {
-        QuickTaskButton("revert_ico"){
-            
         }.iconSize(width: 20.56, height: 18.91)
-            .loading(false)
-            .disabled(true)
+            .loading(loadingVM.isLoading)
+            .disabled(isDisableRewriteButton)
     }
     
     private var goBackButton: some View {
@@ -70,7 +72,7 @@ struct QuickTaskView: View {
             
         }.iconSize(width: 14.41, height: 18.91)
             .loading(false)
-            .disabled(true)
+            .disabled(isDisableButton)
     }
     
     private var forwardButton: some View {
@@ -78,22 +80,23 @@ struct QuickTaskView: View {
             print("Forward action")
         }.iconSize(width: 14.41, height: 18.91)
             .loading(false)
-            .disabled(true)
+            .disabled(isDisableButton)
     }
     
+    private var copyButton: some View {
+        QuickTaskButton("copy_ico"){
+            print("Copy action")
+        }.iconSize(width: 14.41, height: 18.91)
+            .loading(false)
+            .disabled(isDisableButton)
+    }
     
     var body: some View {
-        VStack(spacing: 0) {
-            WText("QUICKTASKS")
-                .customFont(.interSemiBold, size: 10.5)
-            WVSpacer(10)
-            HStack(spacing:18) {
-                textEditorButton
-                translationButton
-                revertButton
-                goBackButton
-                forwardButton
-            }
+        HStack(spacing:15) {
+            goBackButton
+            rewriteButton
+            forwardButton
+            copyButton
         }
         .allowsHitTesting(!loadingVM.isLoading)
         //.displayToastMessage(toastMessageVM)
@@ -103,10 +106,9 @@ struct QuickTaskView: View {
 #Preview {
     @Previewable var container = SonaAppContainer(container: DIContainer.shared)
     QuickTaskView()
-        .setupKeyboardVMEnvironmentObjectPreview("I am Thien")
+        .setupKeyboardVMEnvironmentObjectPreview("I am hero")
         .setupCommonEnvironmentObjects(container)
         .setupEnvironmentObjectsPreview(container)
-   
         .setupTokenApiPreview()
         .setupApiConfigPreview()
 }

@@ -18,11 +18,9 @@ struct SonaKeyboardView: View {
     var body: some View {
         ZStack {
             // Main content
-            VStack {
+            VStack(spacing: 25) {
+                ToneAndPersonaView()
                 QuickTaskView()
-                //suggestionInput
-                WVSpacer(43)
-                TonesView()
             }.allowsHitTesting(!loadingVM.isLoading)
 
             
@@ -64,9 +62,11 @@ struct SonaKeyboardView: View {
 
 #Preview {
     @Previewable @StateObject var container = SonaAppContainer(container: DIContainer.shared)
+    
 
     SonaKeyboardView()
         .keyboardFramePreview()
+        .environmentObject(KeyboardInputViewModel(inputText: "I AM HERO"))
         .setupEnvironmentObjectsPreview(container)
         .setupApiConfigPreview()
         .setupTokenApiPreview() 

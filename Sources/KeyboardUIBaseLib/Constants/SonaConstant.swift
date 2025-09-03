@@ -7,10 +7,10 @@
 
 let DEFAULT_SONA_TONE = "Neutral"
 let SONA_TONES = [
-    "Encouraging", "Neutral", "Confident", "Reflective", "Persona Work Colleague"
+    "Warm", "Crisp", "Playful", "Encouraging", "Neutral","Confident","Reflective"
 ]
 
 let DEFAULT_SONA_PERSONA = "Neutral"
 let SONA_PERSONAS = [
-    "Neutral",  "Reflective", "Persona Work Colleague", "Confident", "Encouraging"
+    "Son",  "Family Member", "Work Colleague", "Mentor", "Close Friend","Clear Leader", "Husband"
     ]

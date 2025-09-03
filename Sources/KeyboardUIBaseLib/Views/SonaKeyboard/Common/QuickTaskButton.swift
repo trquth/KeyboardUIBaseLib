@@ -48,7 +48,7 @@ struct QuickTaskButton: View {
                 Group {
                     if _isLoading {
                         RoundedRectangle(cornerRadius: _cornerRadius)
-                            .fill(.black)
+                            .fill(Color(hex:"#23AF5E"))
                             .overlay(
                                 ActivityIndicator(
                                     size: 20,

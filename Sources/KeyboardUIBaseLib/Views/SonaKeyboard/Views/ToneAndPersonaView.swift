@@ -8,7 +8,7 @@
 import SwiftUI
 import Combine
 
-struct TonesView: View {
+struct ToneAndPersonaView: View {
     @EnvironmentObject private var sonaVM: SonaViewModel
     @EnvironmentObject private var keyboardVM: KeyboardInputViewModel
     @EnvironmentObject private var toastMessageVM: ToastMessageManager
@@ -50,6 +50,7 @@ struct TonesView: View {
             let data = try await sonaVM.rewriteText(params)
             let translatedText = data.output
             if !translatedText.isEmpty {
+                LogUtil.d(.Tone_And_Persona_View,"translated text '\(translatedText)'")
                 sharedDataVM.setTranslatedText(translatedText)
                 keyboardVM.setInputText(translatedText)
             }
@@ -73,6 +74,11 @@ struct TonesView: View {
                                         Color.black.opacity(0.6),
                                         Color.black.opacity(0.7),
                                         Color.red]
+    
+    private var isDisable: Bool {
+        return keyboardVM.inputText.isEmpty
+    }
+    
     
     private var leftBlurView: some View {
         HStack(spacing:0){
@@ -103,42 +109,53 @@ struct TonesView: View {
     }
     
     var body: some View {
-        ZStack {
-            VStack(spacing: 0) {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing:5) {
-                        ForEach(SONA_TONES, id: \.self) { option in
-                            ChipView(option){
-                                Task {
-                                    await onSelect(type: .tone(option))
+        VStack(spacing:0) {
+            WText("TONE & PERSONA")
+                .customFont(.interSemiBold, size: 10.5)
+                .color(Color(hex:"#B5B5B5"))
+            ZStack {
+                VStack(spacing: 0) {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing:5) {
+                            ForEach(SONA_TONES, id: \.self) { option in
+                                ChipView(option){
+                                    Task {
+                                        await onSelect(type: .tone(option))
+                                    }
                                 }
-                            }.isSelected(isSelectedTone(option))
-                                .loading(isSelectedTone(option) && loadingVM.isLoading)
-                                .small()
+                                .isSelected(isSelectedTone(option))
+                                    .loading(isSelectedTone(option) && loadingVM.isLoading)
+                                    .small()
+                                    .disable(isDisable)
+                            }
                         }
+                        .padding(.horizontal, 20)
+                        .padding(.top,10)
+                        .frame(maxHeight:.infinity,alignment: .center)
                     }
-                    .padding(.horizontal, 25)
-                    .frame(maxHeight:.infinity,alignment:.top)
-                }
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing:5) {
-                        ForEach(SONA_PERSONAS , id: \.self) { option in
-                            ChipView(option){
-                                Task {
-                                    await onSelect(type: .persona(option))
-                                }
-                            }.isSelected(isSelectedPersona(option))
-                                .loading(isSelectedPersona(option) && loadingVM.isLoading)
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing:5) {
+                            ForEach(SONA_PERSONAS , id: \.self) { option in
+                                ChipView(option){
+                                    Task {
+                                        await onSelect(type: .persona(option))
+                                    }
+                                }.isSelected(isSelectedPersona(option))
+                                    .loading(isSelectedPersona(option) && loadingVM.isLoading)
+                                    .disable(isDisable)
+                            }
                         }
+                        .padding(.horizontal, 20)
+                        .padding(.bottom,10)
+                        .frame(maxHeight:.infinity,alignment:.center)
                     }
-                    .padding(.horizontal, 25)
-                    .frame(maxHeight:.infinity,alignment:.bottom)
                 }
-            }
-            leftBlurView
-            rightBlurView
-        }.frame(height: 95)
-            .allowsHitTesting(!loadingVM.isLoading)
+                leftBlurView
+                rightBlurView
+            }.frame(height: 130)
+                .allowsHitTesting(!loadingVM.isLoading)
+        }
+       
         //.displayToastMessage(toastMessageVM)
     }
 }
@@ -146,8 +163,8 @@ struct TonesView: View {
 #Preview {
     @Previewable var container = SonaAppContainer(container: DIContainer.shared)
     
-    TonesView()
-        .setupKeyboardVMEnvironmentObjectPreview("I am Thien")
+    ToneAndPersonaView()
+        .setupKeyboardVMEnvironmentObjectPreview("")
         .setupEnvironmentObjectsPreview(container)
         .setupApiConfigPreview()
         .setupTokenApiPreview()

@@ -354,6 +354,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 19957ED98EBE91595A3C84D0 /* Pods-MyKeyboard2Extension.debug.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = MyKeyboard2Extension/MyKeyboard2Extension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -384,6 +385,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4021C2910DAE30CB57BF17BF /* Pods-MyKeyboard2Extension.release.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = MyKeyboard2Extension/MyKeyboard2Extension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;

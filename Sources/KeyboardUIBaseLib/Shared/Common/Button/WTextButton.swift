@@ -29,6 +29,10 @@ struct WTextButton: View {
     private var _horizontalPadding: CGFloat
     private var _verticalPadding: CGFloat
     private var _buttonHeight: CGFloat?
+    private var _hasShadow: Bool
+    private var _shadowColor: Color
+    private var _shadowRadius: CGFloat
+    private var _shadowOffset: CGSize
     private var _action: () -> Void
     
     // MARK: - Initializer (WIconButton style)
@@ -45,6 +49,10 @@ struct WTextButton: View {
         isActive: Bool = false,
         isDisabled: Bool = false,
         buttonHeight: CGFloat? = nil,
+        hasShadow: Bool = false,
+        shadowColor: Color = Color.black.opacity(0.08),
+        shadowRadius: CGFloat = 8,
+        shadowOffset: CGSize = CGSize(width: 0, height: 2),
         action: @escaping () -> Void = {}
     ) {
         self._text = text
@@ -59,13 +67,17 @@ struct WTextButton: View {
         self._isActive = isActive
         self._isDisabled = isDisabled
         self._buttonHeight = buttonHeight
+        self._hasShadow = hasShadow
+        self._shadowColor = shadowColor
+        self._shadowRadius = shadowRadius
+        self._shadowOffset = shadowOffset
         self._action = action
     }
     
     // MARK: - Computed Properties (WIconButton style)
     private var effectiveBackgroundColor: Color {
         if _isDisabled {
-            return Color(hex: "#F6F5F4")
+            return .white
         }
         
         if _isActive {
@@ -114,6 +126,10 @@ struct WTextButton: View {
         case .minimal:
             return 0
         }
+    }
+    
+    private var shouldShowShadow: Bool {
+        return _hasShadow || _isDisabled
     }
     
     // MARK: - Text View Builder (WIconButton style)
@@ -175,6 +191,12 @@ struct WTextButton: View {
         )
         .frame(maxWidth: buttonMaxWidth,alignment: .center)
         .background(backgroundView)
+        .shadow(
+            color: shouldShowShadow ? _shadowColor : .clear,
+            radius: shouldShowShadow ? _shadowRadius : 0,
+            x: shouldShowShadow ? _shadowOffset.width : 0,
+            y: shouldShowShadow ? _shadowOffset.height : 0
+        )
         .scaleEffect(_isActive ? 0.95 : 1.0)
         .animation(.easeInOut(duration: 0.1), value: _isActive)
         .allowsHitTesting(!_isDisabled)
@@ -306,6 +328,34 @@ extension WTextButton {
         copy._isDisabled = isDisabled
         return copy
     }
+    
+    func withShadowOffset(
+        enabled: Bool = true,
+        color: Color = Color.black.opacity(0.08),
+        radius: CGFloat = 8,
+        offset: CGSize = CGSize(width: 0, height: 2)
+    ) -> WTextButton {
+        var copy = self
+        copy._hasShadow = enabled
+        copy._shadowColor = color
+        copy._shadowRadius = radius
+        copy._shadowOffset = offset
+        return copy
+    }
+    
+    func withShadowXY(
+        color: Color = Color.black.opacity(0.08),
+        radius: CGFloat = 8,
+        x: CGFloat = 0,
+        y: CGFloat = 2
+    ) -> WTextButton {
+        var copy = self
+        copy._hasShadow = true
+        copy._shadowColor = color
+        copy._shadowRadius = radius
+        copy._shadowOffset = CGSize(width: x, height: y)
+        return copy
+    }
 }
 
 // MARK: - Preview
@@ -331,10 +381,11 @@ extension WTextButton {
                         WTextButton("return"){
                             print("Return pressed")
                         }
-                            .buttonStyle(.contained)
-                            .backgroundColor(Color(hex: "#007AFF"))
+                        .buttonStyle(.contained)
+//                            .backgroundColor(Color(hex: "#007AFF"))
                             .foregroundColor(.white)
                             .buttonSize(width: 80, height: 45)
+                            .disable(true)
                         
                         WTextButton("a")
                             .buttonStyle(.outlined)
@@ -440,6 +491,33 @@ extension WTextButton {
                     }
                     
                     Text("Different font weights")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+            
+            Divider()
+            
+            // Shadow Examples
+            VStack(spacing: 16) {
+                Text("Shadow Examples")
+                    .font(.headline)
+                
+                VStack(spacing: 12) {
+                    HStack(spacing: 15) {
+                        WTextButton("Regular")
+                            .buttonStyle(.contained)
+                        
+                        WTextButton("Disabled")
+                            .buttonStyle(.contained)
+                            .disable(true)
+                        
+                        WTextButton("Manual Shadow")
+                            .buttonStyle(.contained)
+                            .withShadowOffset()
+                    }
+                    
+                    Text("Regular • Disabled (auto shadow) • Manual shadow")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
