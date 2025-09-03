@@ -158,6 +158,18 @@ public final class TokenAppStorageService: @unchecked Sendable {
         }
     }
     
+    /// Clear access token only
+    public func clearAccessToken() {
+        queue.async(flags: .barrier) {
+            let userDefaults = UserDefaults.standard
+            
+            userDefaults.removeObject(forKey: Keys.accessToken)
+        
+            userDefaults.synchronize()
+            print("✅ TokenAppStorageService: Clear access token from UserDefaults")
+        }
+    }
+    
     /// Get all token data as a dictionary (useful for debugging)
     /// - Returns: Dictionary containing all stored token information
     public func getAllTokenData() -> [String: Any] {

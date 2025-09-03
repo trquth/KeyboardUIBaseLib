@@ -26,6 +26,7 @@ struct MainView: View {
     
     var body: some View {
         VStack(spacing: 0) {
+            Divider()
             WVSpacer(10)
             header
             WVSpacer(2)

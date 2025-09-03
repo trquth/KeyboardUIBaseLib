@@ -14,11 +14,12 @@ struct SonayKeyboardApp: View {
         SonaKeyboardView()
             .setupEnvironmentObjects(container)
             .setupApiConfig()
-            .setupTokenApi(token: DEMO_ACCESS_TOKEN, refreshToken: REFRESH_TOKEN)
     }
 }
 
 #Preview {
     SonayKeyboardApp()
         .keyboardBorderPreview()
+        .setupTokenApiPreview()
+        
 }

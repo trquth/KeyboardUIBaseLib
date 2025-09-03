@@ -11,17 +11,15 @@ import Alamofire
 struct SonaKeyboardView: View {
     @EnvironmentObject private var toastMessageVM: ToastMessageManager
     @EnvironmentObject private var loadingVM: LoadingViewModel
-    
-    var body: some View {
-        ZStack {
-            VStack(spacing: 8) {
-                ToneAndPersonaView()
-                QuickTaskView()
-            }.allowsHitTesting(!loadingVM.isLoading)
-        }
-        .frame(height: 225)
-        .displayToastMessage(toastMessageVM)
         
+    var body: some View {
+        VStack(spacing: 5) {
+            ToneAndPersonaView()
+            QuickTaskView()
+            WSpacer()
+        }
+        .allowsHitTesting(!loadingVM.isLoading)
+        .displayToastMessage(toastMessageVM)
     }
 }
 

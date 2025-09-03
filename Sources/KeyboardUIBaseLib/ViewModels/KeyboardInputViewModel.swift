@@ -13,7 +13,7 @@ typealias TextChangeCallback = (KeyItem) -> Void
 public class KeyboardInputViewModel: ObservableObject {
     @Published public var inputText: String = ""
     @Published public var lastPressedKey: String = ""
-    @Published public var currentKeyboard: KeyboardType = .text
+    @Published public var currentKeyboard: KeyboardType = .sona
     @Published public var currentTypingInput: String = ""
     @Published public var lastWordTyped: String = ""
     
