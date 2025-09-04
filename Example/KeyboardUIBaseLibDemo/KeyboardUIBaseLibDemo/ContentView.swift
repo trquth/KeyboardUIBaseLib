@@ -8,17 +8,66 @@
 import SwiftUI
 import KeyboardUIBaseLib
 
+// MARK: - RefreshTokenModel
+struct RefreshTokenModel: Codable {
+    let message: String
+    let data: DataClass
+}
+
+// MARK: - DataClass
+struct DataClass: Codable {
+    let accessToken: String
+}
+
+struct ApiError: Error {
+    let message: String
+}
+
 struct ContentView: View {
     
     private let shared = UserDefaults(suiteName: "group.keyboarduibaselib")
+    private let REFRESH_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGE0M2FjMDgwZDU4ZDhhODg0NWJmODciLCJpYXQiOjE3NTY5NTYyMTQsImV4cCI6MTc1NzU2MTAxNCwiYXVkIjoic29uYS1hcHAiLCJpc3MiOiJzb25hLWFwaSJ9.b-0R9XgcTTL2vChikpQo-OhEmFtFA9oJiTnBghOYVgg"
     
     @State var token: String = ""
     @State var input: String = ""
     @FocusState private var isFocused: Bool
     
+    @State var isLoading: Bool = false
     
-    private func onSaveToken(){
-        shared?.set("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGFjMmU4YmQwZWUxMzIwMDMzZTVjMTgiLCJpYXQiOjE3NTYzNDY2NjQsImV4cCI6MTc1Njk1MTQ2NCwiYXVkIjoic29uYS1hcHAiLCJpc3MiOiJzb25hLWFwaSJ9.IBjvrFbnDt9TsrpbLo1Vdv_9RitwYp8KiULDJ2vxY2M", forKey: "DEMO_ACCESS_TOKEN")
+    private func refreshTokenApi() async throws -> String{
+        guard let url = URL(string: "https://pr0lkn29o9.execute-api.us-east-1.amazonaws.com/Prod/api/auth/refresh") else {
+            throw ApiError(message: "Invalid URL")
+        }
+        isLoading = true
+        var  request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let body: [String: String] = [
+            "refreshToken": REFRESH_TOKEN
+        ]
+        request.httpBody = try JSONEncoder().encode(body)
+
+        let (data, _) = try await URLSession.shared.data(for: request)
+        do {
+            let token = try JSONDecoder().decode(RefreshTokenModel.self, from: data)
+            isLoading = false
+            return token.data.accessToken
+        }catch {
+            isLoading = false
+            print("Decoding error: \(error.localizedDescription)")
+            throw ApiError(message: "Decoding error")
+        }
+    }
+    
+    private func onSaveToken()async{
+        do {
+            let newToken = try await refreshTokenApi()
+            shared?.set(newToken, forKey: "DEMO_ACCESS_TOKEN")
+            self.token = newToken
+        }catch {
+            print("Error refreshing token: \(error.localizedDescription)")
+        }
     }
     
     private func onGetToken(){
@@ -46,10 +95,13 @@ struct ContentView: View {
                     .bold()
                 HStack(spacing: 15) {
                     Button {
-                        onSaveToken()
-                        print("Save token")
+                        Task {
+                           await onSaveToken()
+                            print("Generate token")
+                        }
+                       
                     } label: {
-                        Text("Save Token")
+                        Text(isLoading ? "Loading..." : "Generate Token")
                             .foregroundStyle(.white)
                             .padding(10)
                             .background(RoundedRectangle(cornerRadius: 10).fill(.blue))

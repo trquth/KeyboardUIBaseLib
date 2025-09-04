@@ -104,7 +104,7 @@ public struct KeyboardLayout {
         ["[", "]", "{", "}", "#", "%", "^", "*", "+", "="],
         
         // Middle row
-        ["_", "\\", "|", "~", "<", ">", "€", "£", "¥", "·"],
+        ["_", "\\", "|", "~", "<", ">", "€", "£", "¥"],
         
         // Bottom row
         [SpecialKey.numbers.rawValue, SpecialKey.dot.rawValue, ",", "?", "!", "'", SpecialKey.delete.rawValue],

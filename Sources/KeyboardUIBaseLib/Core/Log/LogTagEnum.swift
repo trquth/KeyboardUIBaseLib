@@ -21,7 +21,7 @@ public enum LogTagEnum: String, CaseIterable {
 //    }
     
     static var skipTags: Set<String> {
-        let skipTags: [LogTagEnum] = []
+        let skipTags: [LogTagEnum] = [.KEYBOARD_INPUT_VM]
         if( skipTags.isEmpty ) {
             return []
         }
