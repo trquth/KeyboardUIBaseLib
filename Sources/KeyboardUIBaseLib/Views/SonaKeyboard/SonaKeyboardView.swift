@@ -25,12 +25,13 @@ struct SonaKeyboardView: View {
 
 #Preview {
     @Previewable @StateObject var container = SonaAppContainer(container: DIContainer.shared)
-    
+    @Previewable @StateObject var toastMessageVM = DIContainer.shared.toastMessageVM
 
     SonaKeyboardView()
         .keyboardFramePreview()
         .environmentObject(KeyboardInputViewModel(inputText: "I AM HERO"))
         .setupEnvironmentObjectsPreview(container)
         .setupApiConfigPreview()
-        .setupTokenApiPreview() 
+        .setupTokenApiPreview()
+        .displayToastMessage(toastMessageVM)
 }

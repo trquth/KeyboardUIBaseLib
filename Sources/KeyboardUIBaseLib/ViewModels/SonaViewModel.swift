@@ -49,11 +49,23 @@ final class SonaViewModel: ObservableObject {
         }
     }
     
+    func getConversation(for type: ConversationType, data: ConversationRequestParam) async throws -> ConversationDataResponse {
+        do {
+            loadingVM.startLoading()
+            let data =  try await sonaApiService.getConversationApi(for: type, data: data)
+            loadingVM.stopLoading()
+            return data
+        } catch {
+            loadingVM.stopLoading()
+            throw error // Re-throw validation or API errors
+        }
+    }
+    
     func selectTone(_ tone: String) {
         self.selectedTone = tone
     }
     
     func selectPersona(_ persona: String) {
         self.selectedPersona = persona
-    }
+    }   
 }

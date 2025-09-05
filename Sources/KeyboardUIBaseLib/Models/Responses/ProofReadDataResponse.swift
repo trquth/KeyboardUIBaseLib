@@ -12,10 +12,14 @@ struct ProofreadDataResponse: Decodable {
     let output: String
     let promptUsed: String
     let version: String
+    let conversationId: String
+    let outputId: String
     
     enum CodingKeys: String, CodingKey {
         case output = "output"
         case promptUsed = "prompt_used"
         case version = "version"
+        case conversationId = "conversationId"
+        case outputId = "outputId"
     }
 }
