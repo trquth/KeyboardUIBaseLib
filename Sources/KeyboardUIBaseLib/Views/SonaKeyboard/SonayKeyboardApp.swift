@@ -18,8 +18,12 @@ struct SonayKeyboardApp: View {
 }
 
 #Preview {
+    @Previewable @StateObject var keyboardVM = KeyboardInputViewModel(inputText: "I AM HERO")
+    
     SonayKeyboardApp()
+        .environmentObject(keyboardVM)
         .keyboardBorderPreview()
         .setupTokenApiPreview()
+      
         
 }

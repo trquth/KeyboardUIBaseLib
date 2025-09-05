@@ -25,8 +25,18 @@ struct ApiError: Error {
 
 struct ContentView: View {
     
-    private let shared = UserDefaults(suiteName: "group.keyboarduibaselib")
-    private let REFRESH_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGE0M2FjMDgwZDU4ZDhhODg0NWJmODciLCJpYXQiOjE3NTY5NTYyMTQsImV4cCI6MTc1NzU2MTAxNCwiYXVkIjoic29uYS1hcHAiLCJpc3MiOiJzb25hLWFwaSJ9.b-0R9XgcTTL2vChikpQo-OhEmFtFA9oJiTnBghOYVgg"
+    private let appGroupIdentifier = "group.sonakeyboard.share"
+    private let appGroupTokenKey = "sonakeyboard_tokens"
+    private let appGroupRefreshTokenKey = "sonakeyboard_refresh_tokens"
+    
+    
+    private var shared: UserDefaults?
+    
+    init(){
+        shared =  UserDefaults(suiteName: appGroupIdentifier)
+    }
+    
+    private let REFRESH_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGI5MGZlZmNlNmEyM2I3NDcxNDk2YzgiLCJpYXQiOjE3NTcwMzg5NjUsImV4cCI6MTc1NzY0Mzc2NSwiYXVkIjoic29uYS1hcHAiLCJpc3MiOiJzb25hLWFwaSJ9.cArMHmGedFNj8YNj7QrJRfoLXzhvmCPMgjzFhrDr7o4"
     
     @State var token: String = ""
     @State var input: String = ""
@@ -55,7 +65,7 @@ struct ContentView: View {
             return token.data.accessToken
         }catch {
             isLoading = false
-            print("Decoding error: \(error.localizedDescription)")
+            print("Decoding error: \(error)")
             throw ApiError(message: "Decoding error")
         }
     }
@@ -63,7 +73,8 @@ struct ContentView: View {
     private func onSaveToken()async{
         do {
             let newToken = try await refreshTokenApi()
-            shared?.set(newToken, forKey: "DEMO_ACCESS_TOKEN")
+            shared?.set(newToken, forKey: appGroupTokenKey)
+            shared?.set(REFRESH_TOKEN, forKey: appGroupRefreshTokenKey)
             self.token = newToken
         }catch {
             print("Error refreshing token: \(error.localizedDescription)")
@@ -92,6 +103,8 @@ struct ContentView: View {
                 }
             VStack(spacing: 25) {
                 Text(token.isEmpty ? "No token" : token)
+                    .lineLimit(1)
+                    .truncationMode(.head)
                     .bold()
                 HStack(spacing: 15) {
                     Button {

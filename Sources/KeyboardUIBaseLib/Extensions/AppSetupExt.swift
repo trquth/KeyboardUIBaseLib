@@ -12,7 +12,8 @@ extension View {
             self.environmentObject(container.sonaVM)
             .environmentObject(container.loadingVM)
             .environmentObject(container.toastMessageVM)
-           // .environmentObject(container.sharedDataVM)
+            .environmentObject(container.keyboardVM)
+            .environmentObject(container.sharedDataVM)
     }
     
     func setupCommonEnvironmentObjects (_ container: SonaAppContainer) -> some View {

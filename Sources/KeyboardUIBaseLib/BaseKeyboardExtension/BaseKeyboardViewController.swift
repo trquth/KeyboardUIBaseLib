@@ -17,14 +17,9 @@ open class BaseKeyboardViewController: UIInputViewController {
     
     public var cancellables = Set<AnyCancellable>()
     public let sharedDataVM = SharedDataViewModel()
+    private let appGroupConnection: AppGroupConnectionServiceProtocol = AppGroupConnectionService()
+
     
-    public override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
-        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
-    }
-    
-    required public init?(coder: NSCoder) {
-        super.init(coder: coder)
-    }
     
     public override func updateViewConstraints() {
         super.updateViewConstraints()
@@ -68,7 +63,7 @@ open class BaseKeyboardViewController: UIInputViewController {
         // Configure keyboard appearance
         setupKeyboardAppearance()
         // Get keyboard config data from app group
-        getKeyboardConfigData()    
+        loadData()
     }
     
     public override func viewWillLayoutSubviews() {
@@ -117,18 +112,12 @@ extension BaseKeyboardViewController {
 }
 
 extension BaseKeyboardViewController {
-    private func getKeyboardConfigData(){
+    private func loadData(){
         getTokenFromAppGroup()
     }
     
     private func getTokenFromAppGroup(){
-        TokenAppStorageService.shared.clearAccessToken()
-        if let token =  UserDefaultUtil.getValueFromAppGroup(String.self, forKey: "DEMO_ACCESS_TOKEN", groupIdentifier: "group.keyboarduibaselib"), !token.isEmpty  {
-            TokenAppStorageService.shared.saveTokens(
-                accessToken: token,
-                refreshToken: REFRESH_TOKEN
-            )
-        }
+        appGroupConnection.syncTokens()
     }
 }
 

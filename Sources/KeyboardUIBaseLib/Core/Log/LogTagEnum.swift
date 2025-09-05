@@ -12,7 +12,7 @@ public enum LogTagEnum: String, CaseIterable {
     case KEYBOARD_INPUT_VM = "KeyboardInputViewModel"
     case QUICK_TASKS_VIEW = "QuickTaskView"
     case Tone_And_Persona_View = "ToneAndPersonaView"
-    
+    case AppGroupConnectionService = "AppGroupConnectionService"
 //    var tag: String {
 //        switch self {
 //        case .NORMAL_KEYBOARD_VIEW:
