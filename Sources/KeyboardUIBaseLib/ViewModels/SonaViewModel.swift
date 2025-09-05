@@ -22,12 +22,13 @@ final class SonaViewModel: ObservableObject {
         self.loadingVM = loadingVM
     }
     
-    func rewriteText(_ data: RewriteRequestParam) async throws -> RewriteDataResponse {
+    func rewriteText(_ data: RewriteRequestParam) async throws -> RewriteDataModel {
         do {
             // Validate input data using RewriteValidator
             try RewriteValidator.validate(data)
             loadingVM.startLoading()
-            let data =  try await sonaApiService.rewriteApi(data)
+            let response =  try await sonaApiService.rewriteApi(data)
+            let data = RewriteDataModel(from: response)
             loadingVM.stopLoading()
             return data
         } catch {
@@ -36,11 +37,12 @@ final class SonaViewModel: ObservableObject {
         }
     }
     
-    func proofreadText(_ data: ProofreadRequestParam) async throws -> ProofreadDataResponse {
+    func proofreadText(_ data: ProofreadRequestParam) async throws -> ProofreadDataModel {
         do {
             try ProofreadValidator.validate(data)
             loadingVM.startLoading()
-            let data =  try await sonaApiService.proofreadApi(data)
+            let response =  try await sonaApiService.proofreadApi(data)
+            let data = ProofreadDataModel(from: response)
             loadingVM.stopLoading()
             return data
         } catch {
@@ -49,10 +51,11 @@ final class SonaViewModel: ObservableObject {
         }
     }
     
-    func getConversation(for type: ConversationType, data: ConversationRequestParam) async throws -> ConversationDataResponse {
+    func getConversation(for type: ConversationType, data: ConversationRequestParam) async throws -> ConversationDataModel {
         do {
             loadingVM.startLoading()
-            let data =  try await sonaApiService.getConversationApi(for: type, data: data)
+            let response =  try await sonaApiService.getConversationApi(for: type, data: data)
+            let data = ConversationDataModel(from: response)
             loadingVM.stopLoading()
             return data
         } catch {

@@ -25,7 +25,7 @@ struct QuickTaskView: View {
             
             let params = RewriteRequestParam(message: message, tone: selectedTone, persona: selectedPersona)
             let data = try await sonaVM.rewriteText(params)
-            let translatedText = data.conversation.output
+            let translatedText = data.output
             if !translatedText.isEmpty {
                 LogUtil.d(.QUICK_TASKS_VIEW, "translated text '\(translatedText)'")
                 sharedDataVM.setTranslatedText(translatedText)
