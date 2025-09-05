@@ -25,7 +25,7 @@ struct QuickTaskView: View {
             
             let params = RewriteRequestParam(message: message, tone: selectedTone, persona: selectedPersona)
             let data = try await sonaVM.rewriteText(params)
-            let translatedText = data.output
+            let translatedText = data.conversation.output
             if !translatedText.isEmpty {
                 LogUtil.d(.QUICK_TASKS_VIEW, "translated text '\(translatedText)'")
                 sharedDataVM.setTranslatedText(translatedText)
@@ -82,15 +82,17 @@ struct QuickTaskView: View {
         var history: ConversationHistory?
         // Save the transaction history
         if let rewriteData = data as? RewriteDataResponse {
-            let conversationId = rewriteData.conversationId
-            let promptOutputId = rewriteData.outputId
+           let conversation = rewriteData.conversation
+            let conversationId = conversation.conversationID
+            let promptOutputId = conversation.outputID
             
             history = ConversationHistory(conversationId: conversationId, promptOutputId: promptOutputId)
         }
        
         if let proofreadData = data as? ProofreadDataResponse {
-            let conversationId = proofreadData.conversationId
-            let promptOutputId = proofreadData.outputId
+            let conversation = proofreadData.conversation
+            let conversationId = conversation.conversationID
+            let promptOutputId = conversation.outputID
             
             history = ConversationHistory(conversationId: conversationId, promptOutputId: promptOutputId)
         }

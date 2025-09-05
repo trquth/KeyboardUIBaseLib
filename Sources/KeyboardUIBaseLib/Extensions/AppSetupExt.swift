@@ -13,7 +13,7 @@ extension View {
             .environmentObject(container.loadingVM)
             .environmentObject(container.toastMessageVM)
             .environmentObject(container.keyboardVM)
-            .environmentObject(container.sharedDataVM)
+            //.environmentObject(container.sharedDataVM) // shared data view model declares in KeyboardExtension target
     }
     
     func setupCommonEnvironmentObjects (_ container: SonaAppContainer) -> some View {

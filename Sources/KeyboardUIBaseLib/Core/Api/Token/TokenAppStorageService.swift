@@ -76,6 +76,44 @@ public final class TokenAppStorageService: @unchecked Sendable {
         )
     }
     
+    public func saveAccessToken(
+        accessToken: String,
+        expiresIn: Int? = nil
+    ) {
+        queue.async(flags: .barrier) {
+            let userDefaults = UserDefaults.standard
+            
+            // Save access token
+            userDefaults.set(accessToken, forKey: Keys.accessToken)
+    
+            // Calculate and save expiration date if provided
+            if let expiresIn = expiresIn {
+                let expirationDate = Date().addingTimeInterval(TimeInterval(expiresIn))
+                userDefaults.set(expirationDate, forKey: Keys.expiresAt)
+            }
+            
+            userDefaults.synchronize()
+            print("✅ TokenAppStorageService: Tokens saved successfully to UserDefaults")
+        }
+    }
+    
+    public func saveRefreshToken(
+      _ refreshToken: String? = nil
+    ) {
+        queue.async(flags: .barrier) {
+            let userDefaults = UserDefaults.standard
+            
+            // Save refresh token if provided
+            if let refreshToken = refreshToken {
+                userDefaults.set(refreshToken, forKey: Keys.refreshToken)
+            }
+            
+            userDefaults.synchronize()
+            print("✅ TokenAppStorageService: Tokens saved successfully to UserDefaults")
+        }
+    }
+    
+    
     /// Get the current access token
     /// - Returns: Access token if available
     public func getAccessToken() -> String? {

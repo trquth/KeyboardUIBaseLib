@@ -48,7 +48,7 @@ struct ToneAndPersonaView: View {
             loadingVM.startLoading()
             let params = RewriteRequestParam(message: input, tone: selectedTone, persona: selectedPersona)
             let data = try await sonaVM.rewriteText(params)
-            let translatedText = data.output
+            let translatedText = data.conversation.output
             if !translatedText.isEmpty {
                 LogUtil.d(.Tone_And_Persona_View,"translated text '\(translatedText)'")
                 sharedDataVM.setTranslatedText(translatedText)

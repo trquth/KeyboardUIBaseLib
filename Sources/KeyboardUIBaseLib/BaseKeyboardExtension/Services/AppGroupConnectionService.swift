@@ -21,8 +21,12 @@ final class AppGroupConnectionService : AppGroupConnectionServiceProtocol {
         UserDefaultUtil.saveValueToAppGroup(value, forKey: key, groupIdentifier: groupId)
     }
     
-    private func saveData(key: String, value: String){
-        UserDefaultUtil.saveValue(value, forKey: key)
+    private func saveAccessToken(_ value: String){
+        TokenAppStorageService.shared.saveTokens(accessToken: value)
+    }
+    
+    private func saveRefreshToken(_ value: String){
+        TokenAppStorageService.shared.saveRefreshToken(value)
     }
     
     private func clearData(key: String){
@@ -47,27 +51,26 @@ final class AppGroupConnectionService : AppGroupConnectionServiceProtocol {
     }
     
     func syncTokens() {
+        LogUtil.d(.AppGroupConnectionService, "AppGroupConnectionService - syncTokens")
         if let agSavedAccessToken = getDataAppGroup(key: appGroupTokenKey) {
             LogUtil.d(.AppGroupConnectionService, "AppGroupConnectionService - syncTokens - agSavedAccessToken: \(agSavedAccessToken)")
-            if let savedAccessToken = getData(key: appGroupTokenKey){
+            if let savedAccessToken = getAccessToken(){
                 if savedAccessToken != agSavedAccessToken {
-                    clearData(key: appGroupTokenKey)
-                    saveData(key: appGroupTokenKey, value: agSavedAccessToken)
+                    saveAccessToken(agSavedAccessToken)
                 }
             }else {
-                saveData(key: appGroupTokenKey, value: agSavedAccessToken)
+                saveAccessToken(agSavedAccessToken)
             }
         }
         
         if  let agSavedRefreshToken = getDataAppGroup(key: appGroupRefreshTokenKey){
             LogUtil.d(.AppGroupConnectionService, "AppGroupConnectionService - syncTokens - agSavedRefreshToken: \(agSavedRefreshToken)")
-            if  let savedRefreshToken = getData(key: appGroupRefreshTokenKey) {
+            if  let savedRefreshToken = getRefreshToken() {
                 if savedRefreshToken != agSavedRefreshToken {
-                    clearData(key: appGroupRefreshTokenKey)
-                    saveData(key: appGroupRefreshTokenKey, value: agSavedRefreshToken)
+                    saveRefreshToken(agSavedRefreshToken)
                 }
             }else{
-                saveData(key: appGroupRefreshTokenKey, value: agSavedRefreshToken)
+                saveRefreshToken(agSavedRefreshToken)
             }
         }
     }
