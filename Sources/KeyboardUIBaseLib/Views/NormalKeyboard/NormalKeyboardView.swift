@@ -61,7 +61,8 @@ struct NormalKeyboardView: View {
     
     // Get the display text for a key based on shift state
     private func getDisplayText(for key: String) -> String {
-        if shiftState != .off {
+        // Show uppercase if shift is active OR if auto-capitalization should happen (empty text)
+        if shiftState != .off || shouldAutoCapitalizeNext() {
             return key.uppercased()
         }
         return key.lowercased()
@@ -124,14 +125,10 @@ struct NormalKeyboardView: View {
                 shiftState = .off
             }
             
-            // Update current text and auto capitalization state
-            // currentText += actualKey
-            //updateAutoCapitalizationState(for: actualKey)
+            // Update auto capitalization state after typing
+            updateAutoCapitalizationStateAfterTyping(actualKey)
         } else {
             actualKey = key
-            // Update current text for symbols/numbers too
-            //currentText += actualKey
-            //updateAutoCapitalizationState(for: actualKey)
         }
         
         onKeyPressed?(actualKey)
@@ -241,6 +238,7 @@ struct NormalKeyboardView: View {
     }
     
     private func renderShiftKeyButton(_ keyItem: KeyItem) -> some View {
+        // Show active state when: manual shift is on, caps lock is active, or auto-capitalization should happen
         let isActive = shiftState != .off || (shouldAutoCapitalize && currentKeyboardMode == .letters)
         let isCapsLock = shiftState == .capsLock
         
@@ -351,14 +349,21 @@ struct NormalKeyboardView: View {
                     recalculateKeyItems(for: geometry.size.width)
                 })
                 .onChangeCompact(of: currentText, perform: { _ in
-                    _ = updateAutoCapitalizationStateFromText()
-                    //let status1 = shouldAutoCapitalizeNext()
-//                   LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Text changed: '\(currentText)', shouldAutoCapitalize = \(shouldAutoCapitalize), shouldAutoCapitalizeNext() = \(status1) , updateAutoCapitalizationStateFromText = \(status)")
+                    let status = updateAutoCapitalizationStateFromText()
+                    LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Text changed: '\(currentText)', shouldAutoCapitalize = \(status)")
                     
-//                    if status {
-//                        recalculateKeyItems(for: geometry.size.width)
-//                    }
-                    //shiftState = status ? .capsLock : .off
+                    // Update shift state based on auto-capitalization when text is empty
+                    if currentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && status {
+                        // Only set shift to .on if user hasn't manually set caps lock
+                        if shiftState != .capsLock {
+                            shiftState = .on
+                            LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Empty text detected - enabling shift for auto-capitalization")
+                        }
+                    } else if !status && shiftState == .on {
+                        // Reset shift if auto-capitalization is no longer needed and it was auto-set
+                        shiftState = .off
+                        LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Auto-capitalization no longer needed - disabling shift")
+                    }
                 })
             }
         }
@@ -366,9 +371,8 @@ struct NormalKeyboardView: View {
     }
 }
 
+//MARK: - Auto-Capitalization Logic
 extension NormalKeyboardView {
-    // MARK: - ShiftState Helper Properties
-    
     /// Returns true if any form of shift is active (on or caps lock)
     private var isShiftActive: Bool {
         return shiftState != .off
@@ -394,8 +398,9 @@ extension NormalKeyboardView {
         let trimmedText = currentText.trimmingCharacters(in: .whitespacesAndNewlines)
         
         if trimmedText.isEmpty {
-            // Beginning of text
+            // Beginning of text - should auto capitalize
             shouldAutoCapitalize = true
+            LogUtil.v(LogTagEnum.NORMAL_KEYBOARD_VIEW, "Text is empty - auto capitalization enabled")
         } else {
             // Check if we're after a sentence ending followed by space(s)
             let sentenceEnders: Set<Character> = [".", "!", "?"]
@@ -406,6 +411,7 @@ extension NormalKeyboardView {
                 if currentText.hasSuffix(" ") || currentText.hasSuffix("\t") || currentText.hasSuffix("\n") {
                     if let lastChar = lastWord.last, sentenceEnders.contains(lastChar) {
                         shouldAutoCapitalize = true
+                        LogUtil.v(LogTagEnum.NORMAL_KEYBOARD_VIEW, "After sentence ender + space - auto capitalization enabled")
                     } else {
                         shouldAutoCapitalize = false
                     }
@@ -416,18 +422,38 @@ extension NormalKeyboardView {
             } else {
                 // Only whitespace at the end
                 shouldAutoCapitalize = true
+                LogUtil.v(LogTagEnum.NORMAL_KEYBOARD_VIEW, "Only whitespace - auto capitalization enabled")
             }
         }
         
-        // Don't override manual shift status with auto capitalization
-        // Auto capitalization works alongside ShiftState in the rendering logic
         LogUtil.v(LogTagEnum.NORMAL_KEYBOARD_VIEW, "Auto capitalization updated: shouldAutoCapitalize = \(shouldAutoCapitalize), shiftState = \(shiftState), text: '\(currentText)'")
         
         return shouldAutoCapitalize
     }
     
+    /// Update auto capitalization state after typing a character
+    /// This helps maintain proper capitalization flow
+    private func updateAutoCapitalizationStateAfterTyping(_ typedKey: String) {
+        // If we just typed a sentence ender, prepare for next capitalization
+        let sentenceEnders: Set<Character> = [".", "!", "?"]
+        if typedKey.count == 1, let char = typedKey.first, sentenceEnders.contains(char) {
+            shouldAutoCapitalize = true
+            LogUtil.v(LogTagEnum.NORMAL_KEYBOARD_VIEW, "Typed sentence ender - preparing for auto capitalization")
+        } else if typedKey == " " && shouldAutoCapitalize {
+            // Keep auto capitalization enabled after space following sentence ender
+            LogUtil.v(LogTagEnum.NORMAL_KEYBOARD_VIEW, "Typed space - maintaining auto capitalization state")
+        } else if typedKey.rangeOfCharacter(from: .letters) != nil {
+            // After typing a letter, disable auto capitalization unless it's the start of a new sentence
+            if currentText.trimmingCharacters(in: .whitespacesAndNewlines).count <= 1 {
+                // First character, keep auto cap for next sentence
+                shouldAutoCapitalize = false
+            }
+        }
+    }
+    
 }
 
+//MARK: - Key Layout Calculation
 extension NormalKeyboardView {
     struct KeyboardStats {
         let totalKeys: Int
@@ -653,7 +679,8 @@ extension NormalKeyboardView {
         GeometryReader { geometry in
             
             NormalKeyboardView(currentText: $vm.inputText) { key in
-                vm.addInputText(key)
+                inputText += key
+                //vm.addInputText(key)
                 vm.handleKeyboardInput(key){
                     print("Handled key: \($0.value)")
                 }
