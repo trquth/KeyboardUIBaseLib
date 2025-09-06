@@ -19,6 +19,9 @@ struct NormalKeyboardView: View {
     @State private var shouldAutoCapitalize = true // Auto capitalization state
     @Binding var currentText: String
     
+    // Auto-capitalization control
+    private let isAutoCapitalizationEnabled: Bool
+    
     private enum ShiftState {
         case on, off, capsLock
     }
@@ -32,8 +35,13 @@ struct NormalKeyboardView: View {
     private let keySpacing: CGFloat = 4.0 // Reduced spacing for better full-width usage
     private let keyboardPadding: CGFloat = 0 // Use full width - no padding
     
-    init(currentText: Binding<String>, onKeyPressed: ((String) -> Void)? = nil) {
+    init(
+        currentText: Binding<String>, 
+        isAutoCapitalizationEnabled: Bool = true,
+        onKeyPressed: ((String) -> Void)? = nil
+    ) {
         self._currentText = currentText
+        self.isAutoCapitalizationEnabled = isAutoCapitalizationEnabled
         self.onKeyPressed = onKeyPressed
     }
     
@@ -61,8 +69,8 @@ struct NormalKeyboardView: View {
     
     // Get the display text for a key based on shift state
     private func getDisplayText(for key: String) -> String {
-        // Show uppercase if shift is active OR if auto-capitalization should happen (empty text)
-        if shiftState != .off || shouldAutoCapitalizeNext() {
+        // Show uppercase if shift is active OR if auto-capitalization should happen (when enabled)
+        if shiftState != .off || (isAutoCapitalizationEnabled && shouldAutoCapitalizeNext()) {
             return key.uppercased()
         }
         return key.lowercased()
@@ -111,10 +119,10 @@ struct NormalKeyboardView: View {
     private func handleCharacterKey(_ key: String) -> String {
         let actualKey: String
         if currentKeyboardMode == .letters {
-            // Check if we should capitalize based on shift state or auto capitalization
+            // Check if we should capitalize based on shift state or auto capitalization (when enabled)
             
             if getKeyType(for: key) == .text {
-                let shouldCapitalize = shiftState != .off || shouldAutoCapitalizeNext()
+                let shouldCapitalize = shiftState != .off || (isAutoCapitalizationEnabled && shouldAutoCapitalizeNext())
                 actualKey = shouldCapitalize ? key.uppercased() : key.lowercased()
             }else {
                 actualKey = key
@@ -125,8 +133,10 @@ struct NormalKeyboardView: View {
                 shiftState = .off
             }
             
-            // Update auto capitalization state after typing
-            updateAutoCapitalizationStateAfterTyping(actualKey)
+            // Update auto capitalization state after typing (only if auto-capitalization is enabled)
+            if isAutoCapitalizationEnabled {
+                updateAutoCapitalizationStateAfterTyping(actualKey)
+            }
         } else {
             actualKey = key
         }
@@ -238,8 +248,8 @@ struct NormalKeyboardView: View {
     }
     
     private func renderShiftKeyButton(_ keyItem: KeyItem) -> some View {
-        // Show active state when: manual shift is on, caps lock is active, or auto-capitalization should happen
-        let isActive = shiftState != .off || (shouldAutoCapitalize && currentKeyboardMode == .letters)
+        // Show active state when: manual shift is on, caps lock is active, or auto-capitalization should happen (when enabled)
+        let isActive = shiftState != .off || (isAutoCapitalizationEnabled && shouldAutoCapitalize && currentKeyboardMode == .letters)
         let isCapsLock = shiftState == .capsLock
         
         return IconKeyboardButton(
@@ -349,8 +359,11 @@ struct NormalKeyboardView: View {
                     recalculateKeyItems(for: geometry.size.width)
                 })
                 .onChangeCompact(of: currentText, perform: { _ in
+                    // Only handle auto-capitalization if it's enabled
+                    guard isAutoCapitalizationEnabled else { return }
+                    
                     let status = updateAutoCapitalizationStateFromText()
-                    LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Text changed: '\(currentText)', shouldAutoCapitalize = \(status)")
+                    LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Text changed: '\(currentText)', shouldAutoCapitalize = \(status), autoCapEnabled = \(isAutoCapitalizationEnabled)")
                     
                     // Update shift state based on auto-capitalization when text is empty
                     if currentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && status {
@@ -395,6 +408,13 @@ extension NormalKeyboardView {
     }
     
     private func updateAutoCapitalizationStateFromText() -> Bool {
+        // If auto-capitalization is disabled, always return false
+        guard isAutoCapitalizationEnabled else {
+            shouldAutoCapitalize = false
+            LogUtil.v(LogTagEnum.NORMAL_KEYBOARD_VIEW, "Auto-capitalization disabled - shouldAutoCapitalize = false")
+            return false
+        }
+        
         let trimmedText = currentText.trimmingCharacters(in: .whitespacesAndNewlines)
         
         if trimmedText.isEmpty {
@@ -691,7 +711,10 @@ extension NormalKeyboardView {
         
         GeometryReader { geometry in
             
-            NormalKeyboardView(currentText: $vm.inputText) { key in
+            NormalKeyboardView(
+                currentText: $vm.inputText,
+                isAutoCapitalizationEnabled: true
+            ) { key in
                 inputText += key
                 //vm.addInputText(key)
                 vm.handleKeyboardInput(key){
@@ -715,8 +738,21 @@ extension NormalKeyboardView {
         Text("Keyboard with Callback")
             .font(.headline)
         
-        NormalKeyboardView(currentText:.constant("Hello")) { key in
+        NormalKeyboardView(
+            currentText: .constant("Hello"),
+            isAutoCapitalizationEnabled: true
+        ) { key in
             print("📝 Text key pressed: \(key)")
+        }
+        
+        Text("Auto-Capitalization Disabled")
+            .font(.headline)
+        
+        NormalKeyboardView(
+            currentText: .constant(""),
+            isAutoCapitalizationEnabled: false
+        ) { key in
+            print("📝 Text key pressed (no auto-cap): \(key)")
         }
     }
     .padding()
