@@ -434,6 +434,16 @@ extension NormalKeyboardView {
     /// Update auto capitalization state after typing a character
     /// This helps maintain proper capitalization flow
     private func updateAutoCapitalizationStateAfterTyping(_ typedKey: String) {
+        // Check if text became empty after typing (e.g., after delete operations)
+        let isTextEmpty = currentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        
+        if isTextEmpty {
+            // Text is empty - enable auto-capitalization for next character
+            shouldAutoCapitalize = true
+            LogUtil.v(LogTagEnum.NORMAL_KEYBOARD_VIEW, "Text is empty after typing - enabling auto capitalization")
+            return
+        }
+        
         // If we just typed a sentence ender, prepare for next capitalization
         let sentenceEnders: Set<Character> = [".", "!", "?"]
         if typedKey.count == 1, let char = typedKey.first, sentenceEnders.contains(char) {
@@ -446,6 +456,9 @@ extension NormalKeyboardView {
             // After typing a letter, disable auto capitalization unless it's the start of a new sentence
             if currentText.trimmingCharacters(in: .whitespacesAndNewlines).count <= 1 {
                 // First character, keep auto cap for next sentence
+                shouldAutoCapitalize = false
+            } else {
+                // Not the first character and not after sentence ender
                 shouldAutoCapitalize = false
             }
         }
