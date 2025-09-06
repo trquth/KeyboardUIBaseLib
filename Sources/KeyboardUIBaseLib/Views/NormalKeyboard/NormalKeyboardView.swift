@@ -14,6 +14,7 @@ struct NormalKeyboardView: View {
     @State private var shiftState: ShiftState = .off
     @State private var currentKeyboardMode: KeyboardLayout.LayoutType = .letters
     @State private var lastShiftTapTime: Date = Date()
+    @State private var lastSpaceTapTime: Date = Date()
     @State private var calculatedKeyItems: [KeyItem] = []
     @State private var containerWidth: CGFloat = 0
     @State private var shouldAutoCapitalize = true // Auto capitalization state
@@ -77,44 +78,6 @@ struct NormalKeyboardView: View {
     }
     
     // MARK: - Key Handling Methods
-    
-    private func handleShift() {
-        let currentTime = Date()
-        let timeDifference = currentTime.timeIntervalSince(lastShiftTapTime)
-        
-        // Double tap within 0.3 seconds toggles caps lock
-        if timeDifference < 0.3 {
-            switch shiftState {
-            case .off, .on:
-                shiftState = .capsLock
-                LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Double tap detected - Caps Lock: ON")
-            case .capsLock:
-                shiftState = .off
-                LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Double tap detected - Caps Lock: OFF")
-            }
-        } else {
-            // Single tap cycles through states
-            switch shiftState {
-            case .off:
-                shiftState = .on
-                LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Shift: ON")
-            case .on:
-                shiftState = .off
-                LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Shift: OFF")
-            case .capsLock:
-                shiftState = .off
-                shouldAutoCapitalize = false
-                LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Caps Lock disabled by single tap")
-            }
-        }
-        
-        // When user manually activates shift/caps, disable auto capitalization for that character
-        if shiftState != .off {
-            shouldAutoCapitalize = false
-        }
-        
-        lastShiftTapTime = currentTime
-    }
     
     private func handleCharacterKey(_ key: String) -> String {
         let actualKey: String
@@ -182,10 +145,9 @@ struct NormalKeyboardView: View {
     
     private func handleKeyPress(_ key: String) {
         // Always call the callback with the actual character
-         _ = handleCharacterKey(key)
+        _ = handleCharacterKey(key)
     }
     
-    //
     private func renderSpaceButton(_ keyItem: KeyItem) -> some View {
         TextKeyboardButton(
             text: KeyboardLayout.SpecialKey.space.keyDisplay,
@@ -194,10 +156,7 @@ struct NormalKeyboardView: View {
             titleFontSize: 18
             
         ) {
-            if shiftState == .on {
-                shiftState = .off
-            }
-            handleKeyPress(KeyboardLayout.SpecialKey.space.rawValue)
+            handleSpaceKey()
         }
     }
     
@@ -354,33 +313,101 @@ struct NormalKeyboardView: View {
                             x: keyItem.frame.midX,
                             y: keyItem.frame.midY
                         )                }.onChangeCompact(of: currentKeyboardMode, perform: { _ in
-                    LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Keyboard mode changed to \(currentKeyboardMode), recalculating keys")
-                    
-                    recalculateKeyItems(for: geometry.size.width)
-                })
-                .onChangeCompact(of: currentText, perform: { _ in
-                    // Only handle auto-capitalization if it's enabled
-                    guard isAutoCapitalizationEnabled else { return }
-                    
-                    let status = updateAutoCapitalizationStateFromText()
-                    LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Text changed: '\(currentText)', shouldAutoCapitalize = \(status), autoCapEnabled = \(isAutoCapitalizationEnabled)")
-                    
-                    // Update shift state based on auto-capitalization when text is empty
-                    if currentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && status {
-                        // Only set shift to .on if user hasn't manually set caps lock
-                        if shiftState != .capsLock {
-                            shiftState = .on
-                            LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Empty text detected - enabling shift for auto-capitalization")
-                        }
-                    } else if !status && shiftState == .on {
-                        // Reset shift if auto-capitalization is no longer needed and it was auto-set
-                        shiftState = .off
-                        LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Auto-capitalization no longer needed - disabling shift")
-                    }
-                })
+                            LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Keyboard mode changed to \(currentKeyboardMode), recalculating keys")
+                            
+                            recalculateKeyItems(for: geometry.size.width)
+                        })
+                        .onChangeCompact(of: currentText, perform: { _ in
+                            // Only handle auto-capitalization if it's enabled
+                            guard isAutoCapitalizationEnabled else { return }
+                            
+                            let status = updateAutoCapitalizationStateFromText()
+                            LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Text changed: '\(currentText)', shouldAutoCapitalize = \(status), autoCapEnabled = \(isAutoCapitalizationEnabled)")
+                            
+                            // Update shift state based on auto-capitalization when text is empty
+                            if currentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && status {
+                                // Only set shift to .on if user hasn't manually set caps lock
+                                if shiftState != .capsLock {
+                                    shiftState = .on
+                                    LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Empty text detected - enabling shift for auto-capitalization")
+                                }
+                            } else if !status && shiftState == .on {
+                                // Reset shift if auto-capitalization is no longer needed and it was auto-set
+                                shiftState = .off
+                                LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Auto-capitalization no longer needed - disabling shift")
+                            }
+                        })
             }
         }
         .frame(height: calculateKeyboardHeight())
+    }
+}
+
+//MARK: - Double Tap Space to insert Period
+extension NormalKeyboardView {
+    private func handleSpaceKey() {
+        let currentTime = Date()
+        let timeDifference = currentTime.timeIntervalSince(lastSpaceTapTime)
+        
+        // Double tap within 0.3 seconds inserts period + space
+        if timeDifference < 0.3 {
+            // Replace the last space with period + space
+            onKeyPressed?(KeyboardLayout.SpecialKey.delete.rawValue) // Remove last space
+            onKeyPressed?(".") // Insert period
+            onKeyPressed?(KeyboardLayout.SpecialKey.space.rawValue) // Insert space
+            LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Double space detected - inserted period")
+        } else {
+            // Single space tap
+            if shiftState == .on {
+                shiftState = .off
+            }
+            onKeyPressed?(KeyboardLayout.SpecialKey.space.rawValue)
+            LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Single space pressed")
+        }
+        
+        lastSpaceTapTime = currentTime
+    }
+    
+}
+
+//MARK: - Shift and Caps Lock Logic
+extension NormalKeyboardView {
+    private func handleShift() {
+        let currentTime = Date()
+        let timeDifference = currentTime.timeIntervalSince(lastShiftTapTime)
+        
+        // Double tap within 0.3 seconds toggles caps lock
+        if timeDifference < 0.3 {
+            switch shiftState {
+            case .off, .on:
+                shiftState = .capsLock
+                LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Double tap detected - Caps Lock: ON")
+            case .capsLock:
+                shiftState = .off
+                LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Double tap detected - Caps Lock: OFF")
+            }
+        } else {
+            // Single tap cycles through states
+            switch shiftState {
+            case .off:
+                shiftState = .on
+                LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Shift: ON")
+            case .on:
+                shiftState = .off
+                LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Shift: OFF")
+            case .capsLock:
+                shiftState = .off
+                shouldAutoCapitalize = false
+                LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Caps Lock disabled by single tap")
+            }
+        }
+        
+        // When user manually activates shift/caps, disable auto capitalization for that character
+        if shiftState != .off {
+            shouldAutoCapitalize = false
+        }
+        
+        lastShiftTapTime = currentTime
     }
 }
 
@@ -678,10 +705,10 @@ extension NormalKeyboardView {
         
         // Log keyboard statistics and width usage
         let stats = getKeyboardStatistics(for: keyItems)
-//        LogUtil.d(
-//            .NORMAL_KEYBOARD_VIEW,
-//            "Keyboard recalculated for FULL width: \(width), Total keys: \(stats.totalKeys), Rows: \(stats.totalRows)"
-//        )
+        //        LogUtil.d(
+        //            .NORMAL_KEYBOARD_VIEW,
+        //            "Keyboard recalculated for FULL width: \(width), Total keys: \(stats.totalKeys), Rows: \(stats.totalRows)"
+        //        )
         
         // Verify centering by checking leftmost and rightmost key positions
         if let leftmostKey = keyItems.min(by: { $0.frame.minX < $1.frame.minX }),
