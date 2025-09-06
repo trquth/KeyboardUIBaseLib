@@ -23,6 +23,9 @@ struct NormalKeyboardView: View {
     // Auto-capitalization control
     private let isAutoCapitalizationEnabled: Bool
     
+    // Double tap space control
+    private let isDoubleTapSpaceEnabled: Bool
+    
     private enum ShiftState {
         case on, off, capsLock
     }
@@ -39,10 +42,12 @@ struct NormalKeyboardView: View {
     init(
         currentText: Binding<String>, 
         isAutoCapitalizationEnabled: Bool = true,
+        isDoubleTapSpaceEnabled: Bool = true,
         onKeyPressed: ((String) -> Void)? = nil
     ) {
         self._currentText = currentText
         self.isAutoCapitalizationEnabled = isAutoCapitalizationEnabled
+        self.isDoubleTapSpaceEnabled = isDoubleTapSpaceEnabled
         self.onKeyPressed = onKeyPressed
     }
     
@@ -349,15 +354,15 @@ extension NormalKeyboardView {
         let currentTime = Date()
         let timeDifference = currentTime.timeIntervalSince(lastSpaceTapTime)
         
-        // Double tap within 0.3 seconds inserts period + space
-        if timeDifference < 0.3 {
+        // Check if double tap space feature is enabled and detect double tap within 0.3 seconds
+        if isDoubleTapSpaceEnabled && timeDifference < 0.3 {
             // Replace the last space with period + space
             onKeyPressed?(KeyboardLayout.SpecialKey.delete.rawValue) // Remove last space
             onKeyPressed?(".") // Insert period
             onKeyPressed?(KeyboardLayout.SpecialKey.space.rawValue) // Insert space
             LogUtil.d(.NORMAL_KEYBOARD_VIEW, "Double space detected - inserted period")
         } else {
-            // Single space tap
+            // Single space tap or double tap feature disabled
             if shiftState == .on {
                 shiftState = .off
             }
@@ -740,7 +745,8 @@ extension NormalKeyboardView {
             
             NormalKeyboardView(
                 currentText: $vm.inputText,
-                isAutoCapitalizationEnabled: true
+                isAutoCapitalizationEnabled: true,
+                isDoubleTapSpaceEnabled: true
             ) { key in
                 inputText += key
                 //vm.addInputText(key)
@@ -767,7 +773,8 @@ extension NormalKeyboardView {
         
         NormalKeyboardView(
             currentText: .constant("Hello"),
-            isAutoCapitalizationEnabled: true
+            isAutoCapitalizationEnabled: true,
+            isDoubleTapSpaceEnabled: false
         ) { key in
             print("📝 Text key pressed: \(key)")
         }
@@ -777,9 +784,21 @@ extension NormalKeyboardView {
         
         NormalKeyboardView(
             currentText: .constant(""),
-            isAutoCapitalizationEnabled: false
+            isAutoCapitalizationEnabled: false,
+            isDoubleTapSpaceEnabled: false
         ) { key in
-            print("📝 Text key pressed (no auto-cap): \(key)")
+            print("📝 Text key pressed (no auto-cap, no double-tap): \(key)")
+        }
+        
+        Text("Double Tap Space Disabled")
+            .font(.headline)
+        
+        NormalKeyboardView(
+            currentText: .constant("Test"),
+            isAutoCapitalizationEnabled: true,
+            isDoubleTapSpaceEnabled: false
+        ) { key in
+            print("📝 Text key pressed (no double-tap): \(key)")
         }
     }
     .padding()
