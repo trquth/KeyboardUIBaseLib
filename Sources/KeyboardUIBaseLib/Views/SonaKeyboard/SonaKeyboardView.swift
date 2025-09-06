@@ -27,8 +27,12 @@ struct SonaKeyboardView: View {
     @Previewable @StateObject var container = SonaAppContainer(container: DIContainer.shared)
     @Previewable @StateObject var toastMessageVM = DIContainer.shared.toastMessageVM
     @Previewable @StateObject var sharedDataVM = SharedDataViewModel()
+    @Previewable @StateObject var keyboardInputVM = KeyboardInputViewModel(inputText: "I AM HERO")
     
     VStack {
+        WText(":: INPUT TEXT ::")
+        WText(" \(keyboardInputVM.inputText)")
+        WText("****************************************")
         WText(":: Result ::")
         WText("****************************************")
         WText(" \(sharedDataVM.translatedText)")
@@ -36,8 +40,7 @@ struct SonaKeyboardView: View {
         SonaKeyboardView()
     }.keyboardFramePreview()
         .environmentObject(sharedDataVM)
-        .environmentObject(KeyboardInputViewModel(inputText: "I AM HERO"))
-    
+        .environmentObject(keyboardInputVM)
         .setupEnvironmentObjectsPreview(container)
         .setupApiConfigPreview()
         .setupTokenApiPreview()

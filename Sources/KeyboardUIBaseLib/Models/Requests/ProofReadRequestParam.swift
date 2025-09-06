@@ -8,13 +8,13 @@
 import Foundation
 
 public struct ProofreadRequestParam: Codable, Sendable {
-    let message: String
-    let type: String
-    let version: String
+    let message, type,version: String
+    let conversationId: String?
     
-    init(message: String, type: String = "proofread", version: String = "proofread-v1") {
+    init(message: String, type: String = "proofread", version: String = "proofread-v1", conversationId: String? = nil) {
         self.message = message
         self.type = type
         self.version = version
+        self.conversationId = conversationId
     }
 }

@@ -15,6 +15,7 @@ final class SonaViewModel: ObservableObject {
     //@Published var input:String = "Hello I im Binhdadads"
     @Published private(set) var selectedTone: String = "" // Default tone
     @Published private(set) var selectedPersona: String = "" //Default persona
+    @Published private(set) var conversationHistory: ConversationHistoryModel?
     
     
     init(sonaApiService: SonaApiServiceProtocol,loadingVM: LoadingViewModel) {
@@ -70,5 +71,50 @@ final class SonaViewModel: ObservableObject {
     
     func selectPersona(_ persona: String) {
         self.selectedPersona = persona
-    }   
+    }
+    
+    func saveConversationHistory(_ data: Any){
+        var history: ConversationHistoryModel?
+        // Save the transaction history
+        if let rewriteData = data as? RewriteDataModel {
+            let conversation = rewriteData
+            let output = conversation.output
+            let conversationId = conversation.conversationId
+            let promptOutputId = conversation.outputId
+            let hasNext = conversation.hasNext
+            let hasPrevious = conversation.hasPrevious
+            let isFirst = conversation.isFirst
+            let isLast = conversation.isLast
+            
+            history = ConversationHistoryModel(output:output, conversationId: conversationId, promptOutputId: promptOutputId, hasNext: hasNext, hasPrevious: hasPrevious, isFirst: isFirst, isLast: isLast)
+        }
+       
+        if let proofreadData = data as? ProofreadDataModel {
+            let conversation = proofreadData
+            let output = conversation.output
+            let conversationId = conversation.conversationId
+            let promptOutputId = conversation.outputId
+            let hasNext = conversation.hasNext
+            let hasPrevious = conversation.hasPrevious
+            let isFirst = conversation.isFirst
+            let isLast = conversation.isLast
+            
+            history = ConversationHistoryModel(output: output, conversationId: conversationId, promptOutputId: promptOutputId, hasNext: hasNext, hasPrevious: hasPrevious, isFirst: isFirst, isLast: isLast)
+        }
+        if let conversationData = data as? ConversationDataModel {
+            let conversation = conversationData
+            let output = conversation.output
+            let conversationId = conversation.conversationId
+            let promptOutputId = conversation.outputId
+            let hasNext = conversation.hasNext
+            let hasPrevious = conversation.hasPrevious
+            let isFirst = conversation.isFirst
+            let isLast = conversation.isLast
+            
+            history = ConversationHistoryModel(output: output, conversationId: conversationId, promptOutputId: promptOutputId, hasNext: hasNext, hasPrevious: hasPrevious, isFirst: isFirst, isLast: isLast)
+        }
+
+        // You can store this history in a list or database as needed
+        self.conversationHistory = history
+    }
 }

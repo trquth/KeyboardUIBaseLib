@@ -34,13 +34,17 @@ class SonaApiService: SonaApiServiceProtocol {
     func rewriteApi(_ data: RewriteRequestParam) async throws -> RewriteDataResponse {
         do {
             let BASE_URL = ApiConfiguration.shared.baseUrl
-            let params: [String: Any & Sendable] = [
+            var params: [String: Any & Sendable] = [
                 "message": data.message,
                 "type": data.type,
                 "tone": data.tone,
                 "persona": data.persona,
-                "version": data.version
+                "version": data.version,
             ]
+            if let conversationId = data.conversationId {
+                params["conversationId"] = conversationId
+            }
+            
             let url = "\(BASE_URL)/Prod/api/rewrite"
             let response: BaseResponse<RewriteDataResponse> = try await ApiBase.shared.requestWithAuth(
                 url: url,
@@ -68,11 +72,14 @@ class SonaApiService: SonaApiServiceProtocol {
     func proofreadApi(_ data: ProofreadRequestParam) async throws -> ProofreadDataResponse {
         do {
             let BASE_URL = ApiConfiguration.shared.baseUrl
-            let params: [String: Any & Sendable] = [
+            var params: [String: Any & Sendable] = [
                 "message": data.message,
                 "type": data.type,
                 "version": data.version
             ]
+            if let conversationId = data.conversationId {
+                params["conversationId"] = conversationId
+            }
             let url = "\(BASE_URL)/Prod/api/proofread"
             let response: BaseResponse<ProofreadDataResponse> = try await ApiBase.shared.requestWithAuth(
                 url: url,

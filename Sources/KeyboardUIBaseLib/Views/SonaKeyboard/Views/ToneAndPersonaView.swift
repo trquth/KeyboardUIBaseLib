@@ -16,6 +16,10 @@ struct ToneAndPersonaView: View {
     
     @StateObject private var loadingVM = LoadingViewModel()
     
+    private var historyConversationId : String? {
+        return sonaVM.conversationHistory?.conversationId
+    }
+    
     private func isSelectedTone(_ tone: String) -> Bool {
         return sonaVM.selectedTone == tone
     }
@@ -46,16 +50,20 @@ struct ToneAndPersonaView: View {
             }
             print("Selected tone: \(selectedTone), persona: \(selectedPersona)")
             loadingVM.startLoading()
-            let params = RewriteRequestParam(message: input, tone: selectedTone, persona: selectedPersona)
+            var params = RewriteRequestParam(message: input, tone: selectedTone, persona: selectedPersona)
+            if let prevConversationId = historyConversationId {
+                params = RewriteRequestParam(message: input, tone: selectedTone, persona: selectedPersona, conversationId: prevConversationId)
+            }
             let data = try await sonaVM.rewriteText(params)
+            LogUtil.d(.Tone_And_Persona_View,"rewriteText response \(data)")
             let translatedText = data.output
             if !translatedText.isEmpty {
                 LogUtil.d(.Tone_And_Persona_View,"translated text '\(translatedText)'")
                 sharedDataVM.setTranslatedText(translatedText)
                 keyboardVM.setInputText(translatedText)
             }
+            sonaVM.saveConversationHistory(data)
             loadingVM.stopLoading()
-            print("Rewritten text: \(data)")
         }catch {
             print("Error rewriting text: \(error)")
             loadingVM.stopLoading()

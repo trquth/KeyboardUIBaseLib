@@ -8,17 +8,18 @@
 import Foundation
 
 struct RewriteDataModel {
-    let output: String
-    let promptUsed: String
-    let version: String
-    let conversationId: String
-    let outputId: String
-
+    let output,promptUsed, version, conversationId, outputId : String
+    let hasNext, hasPrevious, isFirst, isLast: Bool
+    
     init(from response: RewriteDataResponse) {
         self.output = response.conversation.output
         self.promptUsed = response.conversation.promptUsed
         self.version = response.conversation.version
         self.conversationId = response.conversation.conversationID
         self.outputId = response.conversation.outputID
+        self.hasNext = response.hasNext
+        self.hasPrevious = response.hasPrevious
+        self.isFirst = response.isFirst
+        self.isLast = response.isLast
     }
 }

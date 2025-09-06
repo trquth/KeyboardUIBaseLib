@@ -13,18 +13,51 @@ struct QuickTaskView: View {
     @EnvironmentObject private var toastMessageVM: ToastMessageManager
     @EnvironmentObject private var sharedDataVM: SharedDataViewModel
         
-    @State  private var conversationHistory: ConversationHistory? = nil
     @State private var loadingState: [String: Bool] = [:]
+    
+    private var historyConversationId : String? {
+        return sonaVM.conversationHistory?.conversationId
+    }
+    
+    private var historyPromptOutputId : String? {
+        return sonaVM.conversationHistory?.promptOutputId
+    }
+    
+    private func isEmptyConversationHistory() -> Bool {
+        return historyConversationId == nil || historyPromptOutputId == nil
+    }
+    
+    private var hasPrevConversation: Bool {
+        return sonaVM.conversationHistory?.hasPrevious ?? false
+    }
+    
+    private var hasNextConversation: Bool {
+        return sonaVM.conversationHistory?.hasNext ?? false
+    }
+    
+    private var isFirstConversation: Bool {
+        return sonaVM.conversationHistory?.isFirst ?? false
+    }
+    
+    private var isLastConversation: Bool {
+        return sonaVM.conversationHistory?.isLast ?? false
+    }
     
     private func onRewrite() async {
         do {
             showLoading("rewrite")
-            let message = keyboardVM.inputText
+            let message = sonaVM.conversationHistory?.output ?? ""
             let selectedTone = !sonaVM.selectedTone.isEmpty ? sonaVM.selectedTone : DEFAULT_SONA_TONE
             let selectedPersona = !sonaVM.selectedPersona.isEmpty ? sonaVM.selectedPersona : DEFAULT_SONA_PERSONA
             
-            let params = RewriteRequestParam(message: message, tone: selectedTone, persona: selectedPersona)
+            var params = RewriteRequestParam(message: message, tone: selectedTone, persona: selectedPersona)
+            
+            if let prevConversationId = historyConversationId {
+                params = RewriteRequestParam(message: message, tone: selectedTone, persona: selectedPersona, conversationId: prevConversationId)
+            }
+                    
             let data = try await sonaVM.rewriteText(params)
+            LogUtil.d(.QUICK_TASKS_VIEW, "onRewrite :: response \(data)")
             let translatedText = data.output
             if !translatedText.isEmpty {
                 LogUtil.d(.QUICK_TASKS_VIEW, "translated text '\(translatedText)'")
@@ -32,8 +65,7 @@ struct QuickTaskView: View {
                 keyboardVM.setInputText(translatedText)
             }
             
-            saveTransactionHistory(data)
-        
+            sonaVM.saveConversationHistory(data)
             hideLoading("rewrite")
         }catch {
             hideLoading("rewrite")
@@ -48,14 +80,22 @@ struct QuickTaskView: View {
     
     private func getConversation(for type: ConversationType) async {
         do {
-            if let history = conversationHistory {
-                let conversationId = history.conversationId
-                let promptOutputId = history.promptOutputId
+            if let prevConversationId = historyConversationId,
+               let prevPromptOutputId = historyPromptOutputId {
                 showLoading(type.rawValue)
-                let data = ConversationRequestParam(conversationId: conversationId, promptOutputId: promptOutputId)
+                let param = ConversationRequestParam(conversationId: prevConversationId, promptOutputId: prevPromptOutputId)
                 
-                let conversation = try await sonaVM.getConversation(for:type, data: data)
-                print("Conversation: \(conversation)")
+                let data = try await sonaVM.getConversation(for:type, data: param)
+                LogUtil.d(.QUICK_TASKS_VIEW, "getConversation response :: '\(data)'")
+                let translatedText = data.output
+                if !translatedText.isEmpty {
+                    LogUtil.d(.QUICK_TASKS_VIEW, "getConversation translated text '\(translatedText)'")
+                    sharedDataVM.setTranslatedText(translatedText)
+                    keyboardVM.setInputText(translatedText)
+                }
+                
+                sonaVM.saveConversationHistory(data)
+                
                 hideLoading(type.rawValue)
             }
         }catch {
@@ -78,28 +118,6 @@ struct QuickTaskView: View {
         }
     }
     
-    private func saveTransactionHistory(_ data: Any){
-        var history: ConversationHistory?
-        // Save the transaction history
-        if let rewriteData = data as? RewriteDataResponse {
-           let conversation = rewriteData.conversation
-            let conversationId = conversation.conversationID
-            let promptOutputId = conversation.outputID
-            
-            history = ConversationHistory(conversationId: conversationId, promptOutputId: promptOutputId)
-        }
-       
-        if let proofreadData = data as? ProofreadDataResponse {
-            let conversation = proofreadData.conversation
-            let conversationId = conversation.conversationID
-            let promptOutputId = conversation.outputID
-            
-            history = ConversationHistory(conversationId: conversationId, promptOutputId: promptOutputId)
-        }
-        // You can store this history in a list or database as needed
-        conversationHistory = history
-    }
-    
     private func showLoading(_ key: String) {
         var newState = loadingState.mapValues({ _ in false })
         newState[key] = true
@@ -120,10 +138,15 @@ struct QuickTaskView: View {
     }
     
     private var isDisableRewriteButton: Bool {
-        if keyboardVM.inputText.isEmpty {
+        if isEmptyConversationHistory() {
             return true
         }
-        return isFetching()
+        
+        if isFetching(){
+            return true
+        }
+        
+        return isFirstConversation
     }
     
     private var isDisableCopyButton: Bool {
@@ -142,10 +165,10 @@ struct QuickTaskView: View {
     }
     
     private var isDisableGoBackButton: Bool {
-        if conversationHistory == nil {
+        if isFetching(){
             return true
         }
-        return isFetching()
+       return !hasPrevConversation
     }
     
     private var isLoadingForward: Bool {
@@ -153,10 +176,10 @@ struct QuickTaskView: View {
     }
     
     private var isDisableForwardButton: Bool {
-        if conversationHistory == nil {
+        if isFetching(){
             return true
         }
-        return isFetching()
+       return !hasNextConversation
     }
     
     private var rewriteButton: some View {
@@ -211,27 +234,21 @@ struct QuickTaskView: View {
     }
 }
 
-extension QuickTaskView {
-    private struct ConversationHistory {
-        let conversationId: String
-        let promptOutputId: String
-        
-        init(conversationId: String, promptOutputId: String) {
-            self.conversationId = conversationId
-            self.promptOutputId = promptOutputId
-        }
-    }
-}
-
 #Preview {
     @Previewable var container = SonaAppContainer(container: DIContainer.shared)
     @Previewable @StateObject var toastMessageVM = DIContainer.shared.toastMessageVM
+    @Previewable @StateObject var sonaVM = SonaViewModel(sonaApiService: DIContainer.shared.sonaAPIService,
+                                                         loadingVM: DIContainer.shared.loadingVM)
     
     QuickTaskView()
+        .environmentObject(sonaVM)
         .setupKeyboardVMEnvironmentObjectPreview("I am hero")
         .setupCommonEnvironmentObjects(container)
         .setupEnvironmentObjectsPreview(container)
         .setupTokenApiPreview()
         .setupApiConfigPreview()
         .displayToastMessage(toastMessageVM)
+        .onAppear {
+            sonaVM.saveConversationHistory(ConversationHistoryModel(output: "I am an individual.", conversationId: "68bc2e045f7f2f6a38f79f81", promptOutputId: "68bc2e185f7f2f6a38f79f90", isFirst: true))
+        }
 }
