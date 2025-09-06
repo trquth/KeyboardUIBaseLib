@@ -205,9 +205,9 @@ struct QuickTaskView: View {
             copyButton
         }
         .allowsHitTesting(!isFetching())
-        .onChangeCompact(of: sharedDataVM.inputText) { value in
-            keyboardVM.setInputText(value)
-        }
+//        .onChangeCompact(of: sharedDataVM.inputText) { value in
+//            keyboardVM.setInputText(value)
+//        }
     }
 }
 

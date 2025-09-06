@@ -68,6 +68,12 @@ struct KeyboardUtil {
         KeyboardUtil.deleteAllTextEfficient(proxy)
     }
     
+    public static func getAllText(_ proxy: UITextDocumentProxy) -> String {
+        let contextBefore = getCurrentContext(proxy) ?? ""
+        let contextAfter = getContextAfter(proxy) ?? ""
+        return contextBefore + contextAfter
+    }
+    
     //MARK: - Check
     // Get text length
     public static func getTextLength(_ proxy: UITextDocumentProxy) -> Int {

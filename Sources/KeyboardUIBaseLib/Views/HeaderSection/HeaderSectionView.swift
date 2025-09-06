@@ -42,41 +42,50 @@ struct HeaderSectionView: View {
         sharedDataVM.setSelectedTextReplacement(replacement)
         sharedDataVM.onPressKey(KeyItem(value: KeyboardLayout.SpecialKey.space.rawValue, key: KeyboardLayout.SpecialKey.space))
     }
-        
+    
+    private func renderInputTextPreview() -> some View {
+        WText(keyboardInputVM.inputText)
+            .fontSize(10)
+            .color(.red)
+    }
     
     var body: some View {
-        HStack {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 0) {
-                    ForEach(Array(filteredSuggestions.enumerated()), id: \.element.id) { index, suggestion in
-                        Button{
-                            onSelectTextReplacement(suggestion)
-                        }label: {
-                            WText(suggestion.replacement)
-                                .fontSize(17)
-                                .foregroundColor(.primary)
-                                .padding(.horizontal, 16)
-                        }
-                        // Add divider between words (not after the last word)
-                        if index < filteredSuggestionsCount - 1 {
-                            Divider()
-                                .frame(height: 20)
-                                .background(Color.gray.opacity(0.3))
-                                .padding(.horizontal, 5)
+        VStack(spacing: 0) {
+            renderInputTextPreview()
+            HStack {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 0) {
+                        ForEach(Array(filteredSuggestions.enumerated()), id: \.element.id) { index, suggestion in
+                            Button{
+                                onSelectTextReplacement(suggestion)
+                            }label: {
+                                WText(suggestion.replacement)
+                                    .fontSize(17)
+                                    .foregroundColor(.primary)
+                                    .padding(.horizontal, 16)
+                            }
+                            // Add divider between words (not after the last word)
+                            if index < filteredSuggestionsCount - 1 {
+                                Divider()
+                                    .frame(height: 20)
+                                    .background(Color.gray.opacity(0.3))
+                                    .padding(.horizontal, 5)
+                            }
                         }
                     }
                 }
-            }
-            WSpacer()
-            SwitchKeyboardButton{
-                withAnimation(.easeInOut(duration: 0.3)) {    keyboardInputVM.switchKeyboard(keyboardInputVM.currentKeyboard)
+                WSpacer()
+                SwitchKeyboardButton{
+                    withAnimation(.easeInOut(duration: 0.3)) {    keyboardInputVM.switchKeyboard(keyboardInputVM.currentKeyboard)
+                    }
                 }
             }
+
         }
         .padding(.horizontal, 16)
-        .onAppear {
-            print("Typing input change ::::: \(sharedDataVM.currentTypingInput)")
-        }
+//        .onAppear {
+//            print("Typing input change ::::: \(sharedDataVM.currentTypingInput)")
+//        }
     }
 }
 

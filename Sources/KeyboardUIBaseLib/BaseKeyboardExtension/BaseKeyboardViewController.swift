@@ -18,16 +18,18 @@ open class BaseKeyboardViewController: UIInputViewController {
     public var cancellables = Set<AnyCancellable>()
     public let sharedDataVM = SharedDataViewModel()
     private let appGroupConnection: AppGroupConnectionServiceProtocol = AppGroupConnectionService()
-
     
+    private var proxy: UITextDocumentProxy {
+        textDocumentProxy
+    }
     
     public override func updateViewConstraints() {
         super.updateViewConstraints()
         
         // Add custom view sizing constraints here
-        if let heightConstraint = heightConstraint {
-            heightConstraint.constant = keyboardHeight
-        }
+//        if let heightConstraint = heightConstraint {
+//            heightConstraint.constant = keyboardHeight
+//        }
     }
     
     public override func viewDidLoad() {
@@ -70,7 +72,7 @@ open class BaseKeyboardViewController: UIInputViewController {
         super.viewWillLayoutSubviews()
         
         // Adjust height constraint if needed
-        updateKeyboardHeight()
+        //updateKeyboardHeight()
     }
     
     public override func viewDidAppear(_ animated: Bool) {
@@ -79,38 +81,53 @@ open class BaseKeyboardViewController: UIInputViewController {
         // Load custom fonts if needed
         Font.registerCustomFonts()
         
+        //
+        updateInputTextFieldValueWhenKeyboardOpened()
+        
         // Refresh UILexicon in case user added new text replacements
         loadSupplementaryLexicon()
-    }
- 
-    public override func textWillChange(_ textInput: UITextInput?) {
-        // The app is about to change the document's contents. Perform any preparation here.
     }
     
     public override func textDidChange(_ textInput: UITextInput?) {
         //When text input changes, this func will call with the updated text input.
-        print("📝 Text did change - updating shared data")
-        updateCurrentTypingInput()
+        LogUtil.v(.BaseKeyboardVC, "textDidChange :: Text did change")
+        updateInputTextFieldValueWhenTextChanged()
         //
-        getTextFromTextField()
-    }
-    
-    
-    public override func advanceToNextInputMode() {
-        super.advanceToNextInputMode()
+       // updateCurrentTypingInput()
+        //
+       // getTextFromTextField()
     }
 }
 
 extension BaseKeyboardViewController {
     //
     private func getTextFromTextField() {
-        if let currentText = KeyboardUtil.getCurrentContext(textDocumentProxy), !currentText.isEmpty {
+        if let currentText = KeyboardUtil.getCurrentContext(proxy), !currentText.isEmpty {
             print("Current text context: '\(currentText)'")
-            sharedDataVM.setTextInput(currentText)
+            //sharedDataVM.setTextInput(currentText)
+            //sharedDataVM.setInputTextField(currentText)
         }
+    }
+    
+    //
+    private func getAllTextFromTextField() -> String {
+        let allText = KeyboardUtil.getAllText(proxy)
+        sharedDataVM.setInputTextFieldValue(allText)
+        return allText
+    }
+    
+    private func updateInputTextFieldValueWhenKeyboardOpened(){
+        let allText = getAllTextFromTextField()
+        LogUtil.v(.BaseKeyboardVC, "updateInputTextFieldValueWhenKeyboardOpened ::: '\(allText)'")
+    }
+    
+    private func updateInputTextFieldValueWhenTextChanged(){
+        let allText = getAllTextFromTextField()
+        LogUtil.v(.BaseKeyboardVC, "updateInputTextFieldValueWhenTextChanged ::: '\(allText)'")
     }
 }
 
+//MARK: - Load data
 extension BaseKeyboardViewController {
     private func loadData(){
         getTokenFromAppGroup()
@@ -133,7 +150,7 @@ extension BaseKeyboardViewController {
         sharedDataVM.$pressedKey.sink { [weak self] key in
             guard let key = key else { return }
             self?.handleKeyPressed(key)
-            self?.updateCurrentTypingInput()
+//            self?.updateCurrentTypingInput()
         }.store(in: &cancellables)
         
         sharedDataVM.$selectedTextReplacement.sink { [weak self] replacement in
@@ -154,8 +171,8 @@ extension BaseKeyboardViewController {
             return
         }
         //Clear text before inserting translated text
-        KeyboardUtil.clearAllText(textDocumentProxy)
-        KeyboardUtil.insertText(textDocumentProxy, text: translatedText)
+        KeyboardUtil.clearAllText(proxy)
+        KeyboardUtil.insertText(proxy, text: translatedText)
         print("✅ Text replacement completed")
         
         // Clear the translated text after processing to avoid reprocessing
@@ -169,9 +186,9 @@ extension BaseKeyboardViewController {
 extension BaseKeyboardViewController {
     func handleKeyPressed(_ data: KeyItem) {
         // Handle different types of key presses
-        print("⌨️ KeyboardViewController ::: handleKeyPressed :: Key pressed: '\(data)'")
+        LogUtil.v(.BaseKeyboardVC, "⌨️ Pressed key ::::: \(data)")
         guard let keyValue = data.key else {
-            KeyboardUtil.insertText(textDocumentProxy, text: data.value)
+            KeyboardUtil.insertText(proxy, text: data.value)
             return
         }
         switch keyValue {
@@ -181,32 +198,26 @@ extension BaseKeyboardViewController {
             handleReturnKey()
         case .space:                // Handle both text and actual space
             handleSpaceKey()
-            //        case "caps_lock":
-            //            handleCapsLockKey()
-            //        case "next_keyboard", "globe":
-            //            advanceToNextInputMode()
-            //        case "dismiss", "hide_keyboard":
-            //            handleDismissKeyboard()
         default:
-            KeyboardUtil.insertText(textDocumentProxy, text: data.value)
+            KeyboardUtil.insertText(proxy, text: data.value)
         }
     }
     
-    func handleDeleteKey() {
-        KeyboardUtil.deleteBackward(textDocumentProxy)
+    private func handleDeleteKey() {
+        KeyboardUtil.deleteBackward(proxy)
     }
     
-    func handleSpaceKey() {
-        KeyboardUtil.insertText(textDocumentProxy,text: " ")
+    private  func handleSpaceKey() {
+        KeyboardUtil.insertText(proxy,text: " ")
     }
     
-    func handleReturnKey() {
+    private func handleReturnKey() {
         // Get the current text context before inserting newline
-        let currentText = KeyboardUtil.getCurrentContext(textDocumentProxy) ?? ""
+        let currentText = KeyboardUtil.getCurrentContext(proxy) ?? ""
         print("Current text before return: '\(currentText)'")
         
         // Check the return key type to determine behavior
-        let returnKeyType = textDocumentProxy.returnKeyType
+        let returnKeyType = proxy.returnKeyType
         print("Return key type: \(returnKeyType?.rawValue)")
         
         switch returnKeyType {
@@ -237,12 +248,12 @@ extension BaseKeyboardViewController {
         default:
             // Default behavior - insert newline and submit (keep keyboard open)
             print("📝 Default return - inserting newline")
-            KeyboardUtil.insertText(textDocumentProxy,text: "\n")
+            KeyboardUtil.insertText(proxy,text: "\n")
             handleTextSubmitted(currentText)
         }
     }
-
-    func handleTextSubmitted(_ text: String) {
+    
+    private func handleTextSubmitted(_ text: String) {
         // Called when user presses return/enter
         print("✅ KeyboardViewController: Text submitted: '\(text)'")
         print("📊 Text length: \(text.count) characters")
@@ -262,7 +273,7 @@ extension BaseKeyboardViewController {
 
 // MARK: - Keyboard Utilities
 extension BaseKeyboardViewController {
-    func requestKeyboardDismissal() {
+    private func requestKeyboardDismissal() {
         // For keyboard extensions, we can't directly dismiss the keyboard
         // Instead, we need to signal completion to the host app
         print("🔽 Attempting to signal keyboard dismissal")
@@ -280,7 +291,7 @@ extension BaseKeyboardViewController {
         print("🔽 Keyboard dismissal requested via UIInputViewController.dismissKeyboard()")
     }
     
-    func handleDismissKeyboard() {
+    private  func handleDismissKeyboard() {
         // Note: Keyboard extensions typically can't dismiss themselves directly
         // This would need to be handled by the host app
         print("Keyboard dismiss requested")
@@ -288,7 +299,7 @@ extension BaseKeyboardViewController {
     }
     
     // Public method to dismiss keyboard that can be called from SwiftUI views
-    func dismissCustomKeyboard() {
+    private  func dismissCustomKeyboard() {
         print("🔽 Public dismiss method called")
         requestKeyboardDismissal()
     }
@@ -296,7 +307,7 @@ extension BaseKeyboardViewController {
 
 // MARK: - Supplementary Lexicon Management
 extension BaseKeyboardViewController {
-
+    
     public func loadSupplementaryLexicon() {
         requestSupplementaryLexicon { [weak self] lexicon in
             DispatchQueue.main.async {
@@ -324,30 +335,28 @@ extension BaseKeyboardViewController {
     }
     
     public func handleTextReplacementSelected(_ replacement: TextReplacement) {
-        print("🔄 Text replacement selected: \(replacement.shortcut) → \(replacement.replacement)")
+        LogUtil.v(.BaseKeyboardVC, "🔄 Text replacement selected: \(replacement.shortcut) → \(replacement.replacement)")
         // Get current context to find the shortcut to replace
-        if let lastWord = KeyboardUtil.getCurrentWord(textDocumentProxy) {
-            print("🔤 Applying text replacement for current word: '\(lastWord)'")
+        if let lastWord = KeyboardUtil.getCurrentWord(proxy) {
+            LogUtil.v(.BaseKeyboardVC,"🔤 Applying text replacement for current word: '\(lastWord)'")
             for _ in lastWord {
                 handleDeleteKey()
             }
         }
         // Insert the replacement text
-        KeyboardUtil.insertText(textDocumentProxy, text: replacement.replacement)
-        
-        print("✅ Applied text replacement: '\(replacement.shortcut)' -> '\(replacement.replacement)'")
+        KeyboardUtil.insertText(proxy, text: replacement.replacement)
     }
 }
 
 // MARK: - Current Typing Input Management
 extension BaseKeyboardViewController {
     func updateCurrentTypingInput() {
-        if let lastWord = KeyboardUtil.getCurrentWord(textDocumentProxy) {
-            sharedDataVM.setCurrentTypingInput(lastWord)
-            print("Last word : \(lastWord)")  // Update current typing input
+        if let lastWord = KeyboardUtil.getCurrentWord(proxy) {
+//            sharedDataVM.setCurrentTypingInput(lastWord)
+            LogUtil.v(.BaseKeyboardVC, "Last word ::::: '\(lastWord)'")
             
             // Also update the shared data with current context
-            let currentContext = KeyboardUtil.getCurrentContext(textDocumentProxy) ?? ""
+            let currentContext = KeyboardUtil.getCurrentContext(proxy) ?? ""
             //sharedDataVM.setCurrentText(currentContext)
         }else {
             sharedDataVM.clearTranslatedText()
@@ -359,25 +368,25 @@ extension BaseKeyboardViewController {
 
 // MARK: - Keyboard Configuration
 extension BaseKeyboardViewController {
-     func setupKeyboardAppearance() {
+    func setupKeyboardAppearance() {
         // Configure the keyboard's visual appearance
         view.backgroundColor = UIColor.systemBackground
         
         // Set needs display to refresh the view
         view.setNeedsDisplay()
     }
-    func updateKeyboardHeight() {
-        // You can adjust keyboard height based on device orientation or other factors
-        let newHeight: CGFloat
-        
-        if view.bounds.width > view.bounds.height {
-            // Landscape mode - shorter keyboard
-            newHeight = 250
-        } else {
-            // Portrait mode - taller keyboard
-            newHeight = 250
-        }
-        
-        heightConstraint?.constant = newHeight
-    }
+//    func updateKeyboardHeight() {
+//        // You can adjust keyboard height based on device orientation or other factors
+//        let newHeight: CGFloat
+//        
+//        if view.bounds.width > view.bounds.height {
+//            // Landscape mode - shorter keyboard
+//            newHeight = 250
+//        } else {
+//            // Portrait mode - taller keyboard
+//            newHeight = 250
+//        }
+//        
+//        heightConstraint?.constant = newHeight
+//    }
 }

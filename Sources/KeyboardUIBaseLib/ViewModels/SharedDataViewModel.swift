@@ -11,9 +11,10 @@ public class SharedDataViewModel: ObservableObject {
     @Published public var pressedKey: KeyItem? = nil
     @Published public var translatedText: String = ""
     @Published public var textReplacements: [TextReplacement] = []
-    @Published public var currentTypingInput = ""
+//    @Published public var currentTypingInput = ""
     @Published public var selectedTextReplacement: TextReplacement? = nil
-    @Published public var inputText = ""
+    @Published private(set) var inputText = ""
+    @Published private(set) var inputTextFieldValue = "" //Get text from the input field in the main app
     
     @Published public var accessToken: String = ""
     
@@ -43,13 +44,13 @@ public class SharedDataViewModel: ObservableObject {
         self.textReplacements = []
     }
     
-    public func setCurrentTypingInput(_ text: String) {
-        self.currentTypingInput = text
-    }
-    
-    public func clearCurrentTypingInput() {
-        self.currentTypingInput = ""
-    }
+//    public func setCurrentTypingInput(_ text: String) {
+//        self.currentTypingInput = text
+//    }
+//    
+//    public func clearCurrentTypingInput() {
+//        self.currentTypingInput = ""
+//    }
     
     public func setSelectedTextReplacement(_ replacement: TextReplacement) {
         self.selectedTextReplacement = replacement
@@ -61,5 +62,9 @@ public class SharedDataViewModel: ObservableObject {
     
     public func setTextInput(_ text: String) {
         self.inputText = text
+    }
+    
+    public func setInputTextFieldValue(_ text: String) {
+        self.inputTextFieldValue = text
     }
 }

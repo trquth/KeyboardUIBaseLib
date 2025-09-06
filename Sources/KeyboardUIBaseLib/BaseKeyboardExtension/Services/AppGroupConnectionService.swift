@@ -51,9 +51,9 @@ final class AppGroupConnectionService : AppGroupConnectionServiceProtocol {
     }
     
     func syncTokens() {
-        LogUtil.d(.AppGroupConnectionService, "AppGroupConnectionService - syncTokens")
+        LogUtil.v(.AppGroupConnectionService, "AppGroupConnectionService - syncTokens")
         if let agSavedAccessToken = getDataAppGroup(key: appGroupTokenKey) {
-            LogUtil.d(.AppGroupConnectionService, "AppGroupConnectionService - syncTokens - agSavedAccessToken: \(agSavedAccessToken)")
+            LogUtil.v(.AppGroupConnectionService, "AppGroupConnectionService - syncTokens - agSavedAccessToken: \(agSavedAccessToken)")
             if let savedAccessToken = getAccessToken(){
                 if savedAccessToken != agSavedAccessToken {
                     saveAccessToken(agSavedAccessToken)
@@ -64,7 +64,7 @@ final class AppGroupConnectionService : AppGroupConnectionServiceProtocol {
         }
         
         if  let agSavedRefreshToken = getDataAppGroup(key: appGroupRefreshTokenKey){
-            LogUtil.d(.AppGroupConnectionService, "AppGroupConnectionService - syncTokens - agSavedRefreshToken: \(agSavedRefreshToken)")
+            LogUtil.v(.AppGroupConnectionService, "AppGroupConnectionService - syncTokens - agSavedRefreshToken: \(agSavedRefreshToken)")
             if  let savedRefreshToken = getRefreshToken() {
                 if savedRefreshToken != agSavedRefreshToken {
                     saveRefreshToken(agSavedRefreshToken)

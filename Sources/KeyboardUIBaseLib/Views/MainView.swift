@@ -9,13 +9,14 @@ import SwiftUI
 
 struct MainView: View {
     @EnvironmentObject private var keyboardInputVM: KeyboardInputViewModel
+    @EnvironmentObject private var sharedDataVM: SharedDataViewModel
     
-    private var header : some View {
+    private func renderHeaderSection() -> some View {
         HeaderSectionView()
     }
     
     @ViewBuilder
-    private var keyboard: some View {
+    private func renderKeyboard() -> some View {
         switch keyboardInputVM.currentKeyboard {
         case .emoji, .text:
             NormalKeyboardApp(currentKeyboard: $keyboardInputVM.currentKeyboard)
@@ -28,13 +29,20 @@ struct MainView: View {
         VStack(spacing: 0) {
             Divider()
             WVSpacer(10)
-            header
+            renderHeaderSection()
             WVSpacer(2)
             WSpacer()
-            keyboard
+            renderKeyboard()
                 .keyboardAnimation( keyboardInputVM.currentKeyboard)
+        }.onChangeCompact(of: sharedDataVM.inputTextFieldValue) { value in
+            LogUtil.v(.MainView, "onChangeCompact inputTextFieldValue initializeInputText ::: \(value)")
+            keyboardInputVM.initializeInputText(value)
+        }.onChangeCompact(of: sharedDataVM.translatedText) { value in
+            LogUtil.v(.MainView,"onChangeCompact AI generation translatedText ::: \(value)")
+            if !value.isEmpty {
+                keyboardInputVM.setInputText(value)
+            }
         }
-        
     }
 }
 

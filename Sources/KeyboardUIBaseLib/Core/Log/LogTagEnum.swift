@@ -13,6 +13,8 @@ public enum LogTagEnum: String, CaseIterable {
     case QUICK_TASKS_VIEW = "QuickTaskView"
     case Tone_And_Persona_View = "ToneAndPersonaView"
     case AppGroupConnectionService = "AppGroupConnectionService"
+    case BaseKeyboardVC = "BaseKeyboardViewController"
+    case MainView = "MainView"
 //    var tag: String {
 //        switch self {
 //        case .NORMAL_KEYBOARD_VIEW:
@@ -21,7 +23,7 @@ public enum LogTagEnum: String, CaseIterable {
 //    }
     
     static var skipTags: Set<String> {
-        let skipTags: [LogTagEnum] = [.KEYBOARD_INPUT_VM]
+        let skipTags: [LogTagEnum] = [.KEYBOARD_INPUT_VM,.NORMAL_KEYBOARD_VIEW,.AppGroupConnectionService]
         if( skipTags.isEmpty ) {
             return []
         }

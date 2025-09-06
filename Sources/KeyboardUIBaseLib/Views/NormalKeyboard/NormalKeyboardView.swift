@@ -653,7 +653,7 @@ extension NormalKeyboardView {
         GeometryReader { geometry in
             
             NormalKeyboardView(currentText: $vm.inputText) { key in
-                inputText += key
+                vm.addInputText(key)
                 vm.handleKeyboardInput(key){
                     print("Handled key: \($0.value)")
                 }

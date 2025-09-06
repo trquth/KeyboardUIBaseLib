@@ -12,9 +12,9 @@ typealias TextChangeCallback = (KeyItem) -> Void
 
 public class KeyboardInputViewModel: ObservableObject {
     @Published public var inputText: String = ""
-    @Published public var lastPressedKey: String = ""
+    //    @Published public var lastPressedKey: String = ""
     @Published public var currentKeyboard: KeyboardType = .text
-    @Published public var currentTypingInput: String = ""
+    //    @Published public var currentTypingInput: String = ""
     @Published public var lastWordTyped: String = ""
     
     public init() {
@@ -33,6 +33,21 @@ public class KeyboardInputViewModel: ObservableObject {
         updateLastWordTyped()
     }
     
+    func addInputText(_ text: String) {
+        inputText += text
+    }
+    
+    func initializeInputText(_ text: String) {
+        if !text.isEmpty {
+            //            if inputText.isEmpty {
+            //                inputText = text
+            //                return
+            //            }
+            //  addInputText(text)
+            setInputText(text)
+        }
+    }
+    
     func clearInputText() {
         if !inputText.isEmpty {
             inputText = ""
@@ -40,16 +55,17 @@ public class KeyboardInputViewModel: ObservableObject {
         }
     }
     
-    public func resetCurrentTypingInput() {
-        if !currentTypingInput.isEmpty {
-            currentTypingInput = ""
-        }
-    }
+    //    public func resetCurrentTypingInput() {
+    //        if !currentTypingInput.isEmpty {
+    //            currentTypingInput = ""
+    //        }
+    //    }
     
     public func resetLastWordTyped() {
         if !lastWordTyped.isEmpty {
             lastWordTyped = ""
-        }}
+        }
+    }
     
     // MARK: - Last Word Extraction
     private func updateLastWordTyped() {
@@ -95,17 +111,17 @@ public class KeyboardInputViewModel: ObservableObject {
         
         // Preserve trailing spaces if they existed
         if inputText != trimmedInput && inputText.last != " " {
-            inputText += " "
+            addInputText(" ")
         }
         
         updateLastWordTyped()
         print("🔄 Replaced last word with: '\(replacement)' -> Current input: '\(inputText)', Last word: '\(lastWordTyped)'")
     }
     
-//    public func replaceLastWordWith(_ replacement: String, callback: TextChangeCallback?) {
-//        replaceLastWordWith(replacement)
-//        callback?(KeyItem(value: replacement, key: nil))
-//    }
+    //    public func replaceLastWordWith(_ replacement: String, callback: TextChangeCallback?) {
+    //        replaceLastWordWith(replacement)
+    //        callback?(KeyItem(value: replacement, key: nil))
+    //    }
     
     // Replace word at specific index (0-based)
     public func replaceWordAt(index: Int, with replacement: String) {
@@ -123,7 +139,7 @@ public class KeyboardInputViewModel: ObservableObject {
         
         // Preserve trailing spaces if they existed
         if inputText != trimmedInput && !inputText.hasSuffix(" ") {
-            inputText += " "
+            addInputText(" ")
         }
         
         updateLastWordTyped()
@@ -173,7 +189,7 @@ public class KeyboardInputViewModel: ObservableObject {
     
     // MARK: - Keyboard Input Handling
     func handleKeyboardInput(_ key: String, callback: TextChangeCallback?) {
-        lastPressedKey = key
+        //        lastPressedKey = key
         LogUtil.v(.KEYBOARD_INPUT_VM,"🔑 Key pressed: '\(key)'")
         guard let specialKey = KeyboardLayout.getSpecialKey(for: key) else{
             handleTextKey(key,callback)
@@ -184,7 +200,7 @@ public class KeyboardInputViewModel: ObservableObject {
     
     private func handleTextKey(_ key: String,_ callback: TextChangeCallback? = nil) {
         // Add regular text characters to input
-        inputText += key
+        addInputText(key)
         
         // Update last word typed
         updateLastWordTyped()
@@ -198,7 +214,7 @@ public class KeyboardInputViewModel: ObservableObject {
         
         switch specialKey {
         case .space:
-            inputText += specialKey.keyValue
+            addInputText(specialKey.keyValue)
             updateLastWordTyped()
             callback?(KeyItem(value: specialKey.keyValue, key: specialKey))
             LogUtil.v(.KEYBOARD_INPUT_VM,"🎯 Added space -> Current input: '\(inputText)', Last word: '\(lastWordTyped)'")
@@ -223,7 +239,7 @@ public class KeyboardInputViewModel: ObservableObject {
                 currentKeyboard = .sona
             }
         case .dot:
-            inputText += specialKey.keyValue
+            addInputText(specialKey.keyValue)
             updateLastWordTyped()
             callback?(KeyItem(value: specialKey.keyValue, key: specialKey))
         case .emoji:
@@ -245,7 +261,7 @@ public class KeyboardInputViewModel: ObservableObject {
             }
         } else {
             // Add emoji to input
-            inputText += emoji
+            addInputText(emoji)
             updateLastWordTyped()
             callback?(KeyItem(value: emoji, key: nil))
         }
