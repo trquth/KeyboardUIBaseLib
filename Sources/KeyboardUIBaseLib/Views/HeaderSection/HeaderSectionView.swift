@@ -47,6 +47,8 @@ struct HeaderSectionView: View {
         WText(keyboardInputVM.inputText)
             .fontSize(10)
             .color(.red)
+            .lineLimit(1)
+            .truncationMode(.head)
     }
     
     var body: some View {

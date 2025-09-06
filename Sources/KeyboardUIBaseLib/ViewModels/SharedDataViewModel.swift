@@ -15,6 +15,7 @@ public class SharedDataViewModel: ObservableObject {
     @Published public var selectedTextReplacement: TextReplacement? = nil
     @Published private(set) var inputText = ""
     @Published private(set) var inputTextFieldValue = "" //Get text from the input field in the main app
+    @Published private(set) var initInputTextFieldValue = ""
     
     @Published public var accessToken: String = ""
     
@@ -67,4 +68,9 @@ public class SharedDataViewModel: ObservableObject {
     public func setInputTextFieldValue(_ text: String) {
         self.inputTextFieldValue = text
     }
+    
+    public func setInitInputTextFieldValue(_ text: String) {
+        self.initInputTextFieldValue = text
+    }
+
 }

@@ -111,19 +111,20 @@ extension BaseKeyboardViewController {
     
     //
     private func getAllTextFromTextField() -> String {
-        let allText = KeyboardUtil.getAllText(proxy)
-        sharedDataVM.setInputTextFieldValue(allText)
+        let allText = KeyboardUtil.getCompleteText(proxy)
         return allText
     }
     
     private func updateInputTextFieldValueWhenKeyboardOpened(){
         let allText = getAllTextFromTextField()
         LogUtil.v(.BaseKeyboardVC, "updateInputTextFieldValueWhenKeyboardOpened ::: '\(allText)'")
+        sharedDataVM.setInitInputTextFieldValue(allText)
     }
     
     private func updateInputTextFieldValueWhenTextChanged(){
         let allText = getAllTextFromTextField()
         LogUtil.v(.BaseKeyboardVC, "updateInputTextFieldValueWhenTextChanged ::: '\(allText)'")
+        sharedDataVM.setInputTextFieldValue(allText)
     }
 }
 

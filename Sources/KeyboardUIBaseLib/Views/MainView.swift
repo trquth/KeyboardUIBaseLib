@@ -35,9 +35,14 @@ struct MainView: View {
             renderKeyboard()
                 .keyboardAnimation( keyboardInputVM.currentKeyboard)
         }.onChangeCompact(of: sharedDataVM.inputTextFieldValue) { value in
+            LogUtil.v(.MainView, "onChangeCompact inputTextFieldValue  setInputText::: \(value)")
+            keyboardInputVM.setInputText(value)
+        }
+        .onChangeCompact(of: sharedDataVM.initInputTextFieldValue, perform: { value in
             LogUtil.v(.MainView, "onChangeCompact inputTextFieldValue initializeInputText ::: \(value)")
             keyboardInputVM.initializeInputText(value)
-        }.onChangeCompact(of: sharedDataVM.translatedText) { value in
+        })
+        .onChangeCompact(of: sharedDataVM.translatedText) { value in
             LogUtil.v(.MainView,"onChangeCompact AI generation translatedText ::: \(value)")
             if !value.isEmpty {
                 keyboardInputVM.setInputText(value)

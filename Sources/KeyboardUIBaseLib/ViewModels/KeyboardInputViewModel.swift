@@ -39,12 +39,10 @@ public class KeyboardInputViewModel: ObservableObject {
     
     func initializeInputText(_ text: String) {
         if !text.isEmpty {
-            //            if inputText.isEmpty {
-            //                inputText = text
-            //                return
-            //            }
-            //  addInputText(text)
-            setInputText(text)
+            if inputText.isEmpty {
+                setInputText(text)
+                return
+            }
         }
     }
     
@@ -233,7 +231,7 @@ public class KeyboardInputViewModel: ObservableObject {
             break
             // Shift state is handled internally by the keyboard
         case .numbers, .symbols, .letters:
-            LogUtil.v(.KEYBOARD_INPUT_VM,"🎯 Switching keyboard mode to: \(specialKey)")    
+            LogUtil.v(.KEYBOARD_INPUT_VM,"🎯 Switching keyboard mode to: \(specialKey)")
         case .globe:
             withAnimation(.easeInOut(duration: 0.3)) {
                 currentKeyboard = .sona
